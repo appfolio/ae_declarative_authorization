@@ -19,9 +19,6 @@ else
   require 'test/unit'
 end
 
-# rails 2.3 and ruby 1.9.3 fix
-MissingSourceFile::REGEXPS.push([/^cannot load such file -- (.+)$/i, 1])
-
 # Silence Rails 4 deprecation warnings in test suite
 # TODO: Model.scoped is deprecated
 # TODO: Eager loading Post.includes(:comments).where("comments.title = 'foo'") becomes Post.includes(:comments).where("comments.title = 'foo'").references(:comments)
@@ -40,11 +37,6 @@ require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 
-begin
-  require 'ruby-debug'
-rescue MissingSourceFile; end
-
-
 class MockDataObject
   def initialize(attrs = {})
     attrs.each do |key, value|
@@ -54,7 +46,7 @@ class MockDataObject
       end
     end
   end
-  
+
   def self.descends_from_active_record?
     true
   end
@@ -66,7 +58,7 @@ class MockDataObject
   def self.name
     "Mock"
   end
-  
+
   def self.find(*args)
     raise StandardError, "Couldn't find #{self.name} with id #{args[0].inspect}" unless args[0]
     new :id => args[0]
@@ -92,11 +84,11 @@ end
 class MocksController < ActionController::Base
   attr_accessor :current_user
   attr_writer :authorization_engine
-  
+
   def authorized?
     !!@authorized
   end
-  
+
   def self.define_action_methods(*methods)
     methods.each do |method|
       define_method method do
@@ -109,9 +101,9 @@ class MocksController < ActionController::Base
   def self.define_resource_actions
     define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
   end
-  
+
   def logger(*args)
-    Class.new do 
+    Class.new do
       def warn(*args)
         #p args
       end
@@ -132,6 +124,7 @@ if Rails.version < "3"
 else
   class TestApp
     class Application < ::Rails::Application
+      config.eager_load = false
       config.secret_key_base = "testingpurposesonly"
       config.active_support.deprecation = :stderr
       database_path = File.expand_path('../database.yml', __FILE__)
@@ -159,9 +152,9 @@ else
     end
   else
     Rails.application.routes.draw do
-      match '/name/spaced_things(/:action)' => 'name/spaced_things'
-      match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things'
-      match '/:controller(/:action(/:id))'
+      match '/name/spaced_things(/:action)' => 'name/spaced_things', :via => [:get, :post, :put, :patch, :delete]
+      match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', :via => [:get, :post, :put, :patch, :delete]
+      match '/:controller(/:action(/:id))', :via => [:get, :post, :put, :patch, :delete]
     end
   end
 end
@@ -175,12 +168,12 @@ end
 if Rails.version < "4"
   class Test::Unit::TestCase
     include Authorization::TestHelper
-    
+
     def request!(user, action, reader, params = {})
       action = action.to_sym if action.is_a?(String)
       @controller.current_user = user
       @controller.authorization_engine = Authorization::Engine.new(reader)
-      
+
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
@@ -202,12 +195,12 @@ elsif Rails.version < '4.1'
 
   class ActiveSupport::TestCase
     include Authorization::TestHelper
-    
+
     def request!(user, action, reader, params = {})
       action = action.to_sym if action.is_a?(String)
       @controller.current_user = user
       @controller.authorization_engine = Authorization::Engine.new(reader)
-      
+
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
@@ -233,12 +226,12 @@ else
 
   class ActiveSupport::TestCase
     include Authorization::TestHelper
-    
+
     def request!(user, action, reader, params = {})
       action = action.to_sym if action.is_a?(String)
       @controller.current_user = user
       @controller.authorization_engine = Authorization::Engine.new(reader)
-      
+
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
