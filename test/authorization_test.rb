@@ -332,13 +332,13 @@ class AuthorizationTest < Test::Unit::TestCase
       end
     }
     engine = Authorization::Engine.new(reader)
-    assert engine.permit?(:test, :context => :permissions)
-    assert !engine.permit?(:test, :context => :permissions_2)
+    Authorization.stub :current_user, MockUser.new do
+      assert engine.permit?(:test, :context => :permissions)
+      assert !engine.permit?(:test, :context => :permissions_2)
+    end
   end
-  
+
   def test_default_role
-    previous_default_role = Authorization.default_role
-    Authorization.default_role = :anonymous
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -347,14 +347,16 @@ class AuthorizationTest < Test::Unit::TestCase
         end
       end
     }
-    engine = Authorization::Engine.new(reader)
-    assert engine.permit?(:test, :context => :permissions)
-    assert !engine.permit?(:test, :context => :permissions, 
+    Authorization.stub :default_role, :anonymous do
+      engine = Authorization::Engine.new(reader)
+      Authorization.stub :current_user, MockUser.new do
+        assert engine.permit?(:test, :context => :permissions)
+      end
+      assert !engine.permit?(:test, :context => :permissions,
       :user => MockUser.new(:guest))
-    # reset the default role, so that it does not mess up other tests
-    Authorization.default_role = previous_default_role
+    end
   end
-  
+
   def test_invalid_user_model
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
@@ -1087,16 +1089,16 @@ class AuthorizationTest < Test::Unit::TestCase
         end
       end
     }
-    
+
     engine = Authorization::Engine.new(reader)
-    Authorization.current_user = MockUser.new(:test_role)
-    assert engine.permit?(:test, :context => :permissions)
-    Thread.new do
-      Authorization.current_user = MockUser.new(:test_role2)
-      assert !engine.permit?(:test, :context => :permissions)
+    Authorization.stub :current_user, MockUser.new(:test_role) do
+      assert engine.permit?(:test, :context => :permissions)
+      Thread.new do
+        Authorization.current_user = MockUser.new(:test_role2)
+        assert !engine.permit?(:test, :context => :permissions)
+      end
+      assert engine.permit?(:test, :context => :permissions)
     end
-    assert engine.permit?(:test, :context => :permissions)
-    Authorization.current_user = nil
   end
 
   def test_clone

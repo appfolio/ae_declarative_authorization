@@ -157,15 +157,17 @@ class HelperTest < ActionController::TestCase
     }
     request!(nil, :action, reader)
 
-    assert !has_role?(:test_role)
+    Authorization.stub :current_user, MockUser.new do
+      assert !has_role?(:test_role)
 
-    block_evaled = false
-    has_role?(:test_role) do
-      block_evaled = true
+      block_evaled = false
+      has_role?(:test_role) do
+        block_evaled = true
+      end
+      assert !block_evaled
     end
-    assert !block_evaled
   end
-  
+
   def test_has_role_with_hierarchy
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
