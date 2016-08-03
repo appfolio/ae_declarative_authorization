@@ -238,10 +238,10 @@ module Authorization
       # authorization rules are enforced because for some actions (collections,
       # +new+, +create+), there is no object to evaluate conditions against.  To
       # allow attribute checks on all actions, it is a common pattern to provide
-      # custom objects through +before_filters+:
+      # custom objects through +before_actions+:
       #   class BranchesController < ApplicationController
-      #     before_filter :load_company
-      #     before_filter :new_branch_from_company_and_params,
+      #     before_action :load_company
+      #     before_action :new_branch_from_company_and_params,
       #       :only => [:index, :new, :create]
       #     filter_access_to :all, :attribute_check => true
       #
@@ -250,12 +250,12 @@ module Authorization
       #       @branch = @company.branches.new(params[:branch])
       #     end
       #   end
-      # NOTE: +before_filters+ need to be defined before the first
+      # NOTE: +before_actions+ need to be defined before the first
       # +filter_access_to+ call.
-      #   
+      #
       # For further customization, a custom filter expression may be formulated
       # in a block, which is then evaluated in the context of the controller
-      # on a matching request.  That is, for checking two objects, use the 
+      # on a matching request.  That is, for checking two objects, use the
       # following:
       #   filter_access_to :merge do
       #     permitted_to!(:update, User.find(params[:original_id])) and
@@ -311,13 +311,13 @@ module Authorization
         actions = args.flatten
 
         # prevent setting filter_access_filter multiple times
-        skip_before_filter :filter_access_filter
-        before_filter :filter_access_filter
-        
+        skip_before_action(:filter_access_filter) if method_defined?(:filter_access_filter)
+        before_action :filter_access_filter
+
         filter_access_permissions.each do |perm|
           perm.remove_actions(actions)
         end
-        filter_access_permissions << 
+        filter_access_permissions <<
           ControllerPermission.new(actions, privilege, context,
                                    options[:strong_parameters],
                                    options[:attribute_check],
@@ -344,7 +344,7 @@ module Authorization
 
       # To DRY up the filter_access_to statements in restful controllers,
       # filter_resource_access combines typical filter_access_to and
-      # before_filter calls, which set up the instance variables.
+      # before_action calls, which set up the instance variables.
       #
       # The simplest case are top-level resource controllers with only the
       # seven CRUD methods, e.g.
@@ -457,7 +457,7 @@ module Authorization
       #   Allows to add additional new actions to the default resource +new+ actions.
       # [:+context+]
       #   The context is used to determine the model to load objects from for the
-      #   before_filters and the context of privileges to use in authorization
+      #   before_actions and the context of privileges to use in authorization
       #   checks.
       # [:+nested_in+]
       #   Specifies the parent controller if the resource is nested in another
@@ -514,7 +514,7 @@ module Authorization
         unless options[:nested_in].blank?
           load_parent_method = :"load_#{options[:nested_in].to_s.singularize}"
           shallow_exceptions = options[:shallow] ? {:except => members.keys} : {}
-          before_filter shallow_exceptions do |controller|
+          before_action shallow_exceptions do |controller|
             if controller.respond_to?(load_parent_method, true)
               controller.send(load_parent_method)
             else
@@ -523,7 +523,7 @@ module Authorization
           end
 
           new_for_collection_method = :"new_#{controller_name.singularize}_for_collection"
-          before_filter :only => collections.keys do |controller|
+          before_action :only => collections.keys do |controller|
             # new_for_collection
             if controller.respond_to?(new_for_collection_method, true)
               controller.send(new_for_collection_method)
@@ -536,7 +536,7 @@ module Authorization
 
         unless options[:strong_parameters]
           new_from_params_method = :"new_#{controller_name.singularize}_from_params"
-          before_filter :only => new_actions.keys do |controller|
+          before_action :only => new_actions.keys do |controller|
             # new_from_params
             if controller.respond_to?(new_from_params_method, true)
               controller.send(new_from_params_method)
@@ -547,7 +547,7 @@ module Authorization
           end
         else
           new_object_method = :"new_#{controller_name.singularize}"
-          before_filter :only => :new do |controller|
+          before_action :only => :new do |controller|
             # new_from_params
             if controller.respond_to?(new_object_method, true)
               controller.send(new_object_method)
@@ -555,11 +555,11 @@ module Authorization
               controller.send(:new_blank_controller_object,
                   options[:context] || controller_name, options[:nested_in], options[:strong_parameters], options[:model])
             end
-          end          
+          end
         end
 
         load_method = :"load_#{controller_name.singularize}"
-        before_filter :only => members.keys do |controller|
+        before_action :only => members.keys do |controller|
           # load controller object
           if controller.respond_to?(load_method, true)
             controller.send(load_method)
