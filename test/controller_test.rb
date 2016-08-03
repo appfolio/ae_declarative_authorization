@@ -43,10 +43,10 @@ class BasicControllerTest < ActionController::TestCase
     request!(nil, "action_group_action_2", reader)
     assert !@controller.authorized?
   end
-  
+
   def test_filter_access
-    assert !@controller.class.before_filters.empty?
-    
+    assert !@controller.class._process_action_callbacks.find_all{|x| x.kind == :before}.map(&:filter).empty?
+
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
