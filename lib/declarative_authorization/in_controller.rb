@@ -6,6 +6,9 @@ module Authorization
 
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
+      base.module_eval do
+        before_action(:filter_access_filter) if method_defined?(:filter_access_filter)
+      end
     end
 
     DEFAULT_DENY = false
