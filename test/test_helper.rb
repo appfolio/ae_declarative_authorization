@@ -93,7 +93,7 @@ class MocksController < ActionController::Base
     methods.each do |method|
       define_method method do
         @authorized = true
-        render :text => 'nothing'
+        render :plain => 'nothing'
       end
     end
   end
@@ -235,7 +235,7 @@ else
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
-      get action, params
+      get action, params: params
     end
 
     unless Rails.version < "3"

@@ -267,9 +267,7 @@ class LoadObjectControllerTest < ActionController::TestCase
     end
 
     Authorization::AuthorizationInController.failed_auto_loading_is_not_found = false
-    assert_nothing_raised "Load error is only logged" do
-      request!(MockUser.new(:test_role), "show", reader)
-    end
+    request!(MockUser.new(:test_role), "show", reader)
     assert !@controller.authorized?
     Authorization::AuthorizationInController.failed_auto_loading_is_not_found = true
   end
