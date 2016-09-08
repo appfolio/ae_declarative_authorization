@@ -39,10 +39,6 @@ module Authorization
     Thread.current["ignore_access_control"] || false
   end
 
-  def self.activate_authorization_rules_browser? # :nodoc:
-    ::Rails.env.development?
-  end
-
   @@dot_path = "dot"
   def self.dot_path
     @@dot_path
