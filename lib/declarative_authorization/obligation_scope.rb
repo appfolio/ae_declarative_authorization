@@ -54,7 +54,7 @@ module Authorization
 
     def scope
       # TODO Refactor this. There is certainly a better way.
-      self.klass.joins(@finder_options[:joins]).includes(@finder_options[:include]).where(@finder_options[:conditions])
+      self.klass.joins(@finder_options[:joins]).includes(@finder_options[:include]).where(@finder_options[:conditions]).references(@finder_options[:include])
     end
 
     # Consumes the given obligation, converting it into scope join and condition options.
