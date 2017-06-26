@@ -598,6 +598,8 @@ module Authorization
             attr_value && attr_value > evaluated
           when :gte
             attr_value && attr_value >= evaluated
+          when :id_in_scope
+            !evaluated.find_by_id(attr_value).nil?
           else
             raise AuthorizationError, "Unknown operator #{value[0]}"
           end

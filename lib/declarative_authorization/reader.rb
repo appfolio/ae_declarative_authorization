@@ -30,6 +30,7 @@ module Authorization
   # * AuthorizationRulesReader#lte,
   # * AuthorizationRulesReader#gt,
   # * AuthorizationRulesReader#gte
+  # * AuthorizationRulesReader#id_in_scope
   #
   # And privilege definition methods
   # * PrivilegesReader#privilege,
@@ -515,6 +516,10 @@ module Authorization
       # Greater than or equal to
       def gte(&block)
         [:gte, block]
+      end
+
+      def id_in_scope(&block)
+        [:id_in_scope, block]
       end
 
       private
