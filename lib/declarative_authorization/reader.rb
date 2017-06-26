@@ -219,7 +219,7 @@ module Authorization
       #     has_permissions_on ...
       #   end
       #
-      def role(role, options = {}, &block)
+      def role(role, options = {})
         append_role role, options
         @current_role = role
         yield
@@ -271,7 +271,7 @@ module Authorization
       #   Join operator to logically connect the constraint statements inside
       #   of the has_permission_on block.  May be :+and+ or :+or+.  Defaults to :+or+.
       #
-      def has_permission_on(*args, &block)
+      def has_permission_on(*args)
         options = args.extract_options!
         context = args.flatten
         
