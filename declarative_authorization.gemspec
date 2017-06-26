@@ -1,17 +1,23 @@
 # -*- encoding: utf-8 -*-
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'declarative_authorization/version'
 
 Gem::Specification.new do |s|
-  s.name = "declarative_authorization"
-  s.version = "1.0.0.pre"
+  s.name        = 'ae_declarative_authorization'
+  s.version     = DeclarativeAuthorization::VERSION
+  s.platform    = Gem::Platform::RUBY
+  s.authors     = ['AppFolio', 'Steffen Bartsch']
+  s.email       = 'dev@appfolio.com'
+  s.description = 'ae_declarative_authorization is a Rails gem for maintainable authorization based on readable authorization rules.'
+  s.summary     = s.description
+  s.homepage    = 'http://github.com/appfolio/ae_declarative_authorization'
+  s.licenses    = ['MIT']
 
-  s.required_ruby_version = ">= 2.0.0"
-  s.authors = ["Steffen Bartsch"]
-  s.summary = "declarative_authorization is a Rails plugin for maintainable authorization based on readable authorization rules."
-  s.email = "sbartsch@tzi.org"
-  s.files = %w{CHANGELOG MIT-LICENSE README.rdoc Rakefile authorization_rules.dist.rb garlic_example.rb init.rb} + Dir["app/**/*.rb"] + Dir["app/**/*.erb"] + Dir["config/*"] + Dir["lib/*.rb"] + Dir["lib/**/*.rb"] + Dir["lib/tasks/*"] + Dir["test/*"]
-  s.has_rdoc = true
-  s.extra_rdoc_files = ['README.rdoc', 'CHANGELOG']
-  s.homepage = %q{http://github.com/stffn/declarative_authorization}
-  s.add_dependency('rails', '>= 4.0.0', '< 5.2.0')
-  s.add_development_dependency('test-unit')
+  s.files         = Dir['**/*']
+  s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  s.require_paths = ['lib']
+
+  s.add_dependency(%q<rails>, ['>= 4.2.5.2', '< 5.1'])
 end
