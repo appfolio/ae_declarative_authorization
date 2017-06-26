@@ -1,4 +1,3 @@
-require File.join(%w{declarative_authorization rails_legacy})
 require File.join(%w{declarative_authorization helper})
 require File.join(%w{declarative_authorization in_controller})
 if defined?(ActiveRecord)

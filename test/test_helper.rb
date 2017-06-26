@@ -28,7 +28,6 @@ end
 
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
-require DA_ROOT + File.join(%w{lib declarative_authorization rails_legacy})
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
