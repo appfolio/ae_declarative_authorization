@@ -518,15 +518,16 @@ module Authorization
       end
 
       private
+
       def parse_attribute_conditions_hash!(hash)
         merge_hash = {}
         hash.each do |key, value|
           if value.is_a?(Hash)
             parse_attribute_conditions_hash!(value)
           elsif !value.is_a?(Array)
-            merge_hash[key] = [:is, proc { value }]
+            merge_hash[key] = [:is, value ]
           elsif value.is_a?(Array) and !value[0].is_a?(Symbol)
-            merge_hash[key] = [:is_in, proc { value }]
+            merge_hash[key] = [:is_in, value ]
           end
         end
         hash.merge!(merge_hash)
