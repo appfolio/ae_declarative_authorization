@@ -62,7 +62,7 @@ module Authorization
     # content should only be shown to some users without being concerned
     # with authorization.  E.g. to only show the most relevant menu options
     # to a certain group of users.  That is what has_role? should be used for.
-    def has_role?(*roles, &block)
+    def has_role?(*roles)
       user_roles = authorization_engine.roles_for(current_user)
       result = roles.all? do |role|
         user_roles.include?(role)
@@ -73,7 +73,7 @@ module Authorization
 
     # Intended to be used where you want to allow users with any single listed role to view
     # the content in question
-    def has_any_role?(*roles,&block)
+    def has_any_role?(*roles)
       user_roles = authorization_engine.roles_for(current_user)
       result = roles.any? do |role|
         user_roles.include?(role)
@@ -83,7 +83,7 @@ module Authorization
     end
 
     # As has_role? except checks all roles included in the role hierarchy
-    def has_role_with_hierarchy?(*roles, &block)
+    def has_role_with_hierarchy?(*roles)
       user_roles = authorization_engine.roles_with_hierarchy_for(current_user)
       result = roles.all? do |role|
         user_roles.include?(role)
@@ -93,7 +93,7 @@ module Authorization
     end
 
     # As has_any_role? except checks all roles included in the role hierarchy
-    def has_any_role_with_hierarchy?(*roles, &block)
+    def has_any_role_with_hierarchy?(*roles)
       user_roles = authorization_engine.roles_with_hierarchy_for(current_user)
       result = roles.any? do |role|
         user_roles.include?(role)

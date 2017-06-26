@@ -8,33 +8,32 @@ module Authorization
 
     # If the user meets the given privilege, permitted_to? returns true
     # and yields to the optional block.
-    def permitted_to?(privilege, options = {}, &block)
+    def permitted_to?(privilege, options = {})
       options = {
         :user =>  Authorization.current_user,
         :object => self
       }.merge(options)
-      Authorization::Engine.instance.permit?(privilege,
-          {:user => options[:user],
-           :object => options[:object]},
-          &block)
+      Authorization::Engine.instance.permit?(privilege, { :user => options[:user], :object => options[:object]}) do
+        yield if block_given?
+      end
     end
 
     # Works similar to the permitted_to? method, but doesn't accept a block
     # and throws the authorization exceptions, just like Engine#permit!
-    def permitted_to!(privilege, options = {} )
+    def permitted_to!(privilege, options = {})
       options = {
         :user =>  Authorization.current_user,
         :object => self
       }.merge(options)
-      Authorization::Engine.instance.permit!(privilege,
-          {:user => options[:user],
-           :object => options[:object]})
+      Authorization::Engine.instance.permit!(privilege, { :user => options[:user], :object => options[:object] }) do
+        yield if block_given?
+      end
     end
     
     def self.included(base) # :nodoc:
       base.module_eval do
         # Builds and returns a scope with joins and conditions satisfying all obligations.
-        def self.obligation_scope_for( privileges, options = {} )
+        def self.obligation_scope_for( privileges, options = {})
           options = {
             :user => Authorization.current_user,
             :context => nil,

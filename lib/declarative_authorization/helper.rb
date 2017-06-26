@@ -28,8 +28,10 @@ module Authorization
     # options:
     #     permitted_to? :update, user, :context => :account
     # 
-    def permitted_to?(privilege, object_or_sym = nil, options = {}, &block)
-      controller.permitted_to?(privilege, object_or_sym, options, &block)
+    def permitted_to?(privilege, object_or_sym = nil, options = {})
+      controller.permitted_to?(privilege, object_or_sym, options) do
+        yield if block_given?
+      end
     end
   
     # While permitted_to? is used for authorization in views, in some cases
@@ -48,21 +50,29 @@ module Authorization
     #     ...
     #     <% end %>
     # 
-    def has_role?(*roles, &block)
-      controller.has_role?(*roles, &block)
+    def has_role?(*roles)
+      controller.has_role?(*roles) do
+        yield if block_given?
+      end
     end
     
     # As has_role? except checks all roles included in the role hierarchy
-    def has_role_with_hierarchy?(*roles, &block)
-      controller.has_role_with_hierarchy?(*roles, &block)
+    def has_role_with_hierarchy?(*roles)
+      controller.has_role_with_hierarchy?(*roles) do
+        yield if block_given?
+      end
     end
     
-    def has_any_role?(*roles,&block)
-      controller.has_any_role?(*roles,&block)
+    def has_any_role?(*roles)
+      controller.has_any_role?(*roles) do
+        yield if block_given?
+      end
     end
     
-    def has_any_role_with_hierarchy?(*roles, &block)
-      controller.has_any_role_with_hierarchy?(*roles, &block)
+    def has_any_role_with_hierarchy?(*roles)
+      controller.has_any_role_with_hierarchy?(*roles) do
+        yield if block_given?
+      end
     end
   end
 end
