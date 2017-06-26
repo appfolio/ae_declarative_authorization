@@ -1,9 +1,32 @@
-garlic.rb
-garlic
-nbproject
+# Because this is a gem, ignore Gemfile.lock:
+
+Gemfile.lock
+gemfiles/*.gemfile.lock
+
+# And because this is Ruby, ignore the following
+# (source: https://github.com/github/gitignore/blob/master/Ruby.gitignore):
+
+*.gem
+*.rbc
+.bundle
+.config
+coverage
+InstalledFiles
+lib/bundler/man
+pkg
+log
 rdoc
-gemfiles/*.lock
-log/*
-*.sublime*
+spec/reports
+test/test.log
+test/tmp
+test/version_tmp
+test/test_app/log
+tmp
+test/profiles
 
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
 
+.idea
