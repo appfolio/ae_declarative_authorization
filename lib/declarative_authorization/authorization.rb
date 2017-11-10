@@ -793,7 +793,6 @@ module Authorization
       "if_permitted_to #{@privilege.inspect}, #{@attr_hash.inspect}"
     end
 
-    private
     def self.reflection_for_path(parent_model, path)
       reflection = path.empty? ? parent_model : begin
         parent = reflection_for_path(parent_model, path[0..-2])
