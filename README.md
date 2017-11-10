@@ -539,7 +539,7 @@ See `Authorization::TestHelper` for more information.
 
 ## Providing the Plugin's Requirements
 The requirements are
-* Rails >= 4.2.5.2 and Ruby >= 2.3.3
+* Rails >= 4.2.5.2 and Ruby >= 2.1.x
 * An authentication mechanism 
 * A user object returned by Controller#current_user
 * An array of role symbols returned by User#role_symbols
