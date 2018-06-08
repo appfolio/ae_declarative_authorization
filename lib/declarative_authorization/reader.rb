@@ -209,7 +209,7 @@ module Authorization
       end
 
       def append_role(role, options = {}) # :nodoc:
-        @roles << role unless @roles.include? role
+        @roles << role unless @role_titles.key? role
         @role_titles[role] = options[:title] if options[:title]
         @role_descriptions[role] = options[:description] if options[:description]
       end
