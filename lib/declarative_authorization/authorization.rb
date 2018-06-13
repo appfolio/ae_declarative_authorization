@@ -815,5 +815,7 @@ module Authorization
     def initialize(roles = [Authorization.default_role])
       @role_symbols = roles
     end
+
+    def id; end
   end
 end
