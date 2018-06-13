@@ -8,11 +8,11 @@ rvm:
 gemfile:
   - gemfiles/rails4252.gemfile
   - gemfiles/rails4271.gemfile
-  - gemfiles/rails504.gemfile
+  - gemfiles/rails507.gemfile
 matrix:
   exclude:
   - rvm: 2.1.9
-    gemfile: gemfiles/rails504.gemfile
+    gemfile: gemfiles/rails507.gemfile
   - rvm: 2.4.2
     gemfile: gemfiles/rails4252.gemfile
   - rvm: 2.4.2

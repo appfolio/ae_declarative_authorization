@@ -10,8 +10,8 @@ when '2.3.3' then
     gem 'rails', '4.2.7.1'
   end
 
-  appraise 'rails504' do
-    gem 'rails', '5.0.4'
+  appraise 'rails507' do
+    gem 'rails', '5.0.7'
     gem 'rails-controller-testing'
   end
 
