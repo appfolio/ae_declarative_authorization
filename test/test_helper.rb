@@ -31,6 +31,7 @@ DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
+require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
 
 class MockDataObject
   def initialize(attrs = {})
@@ -61,7 +62,7 @@ class MockDataObject
 
   def self.find_or_initialize_by(args)
     raise StandardError, "Syntax error: find_or_initialize by expects a hash: User.find_or_initialize_by(:id => @user.id)" unless args.is_a?(Hash)
-    new :id => args[:id]
+    new args
   end
 end
 

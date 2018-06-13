@@ -202,7 +202,7 @@ module Authorization
       #
       # Defines a filter to be applied according to the authorization of the
       # current user.  Requires at least one symbol corresponding to an
-      # action as parameter.  The special symbol :+all+ refers to all action.
+      # action as parameter.  The special symbol :+all+ refers to all actions.
       # The all :+all+ statement is only employed if no specific statement is
       # present.
       #   class UserController < ApplicationController
@@ -325,6 +325,16 @@ module Authorization
                                    options[:model],
                                    options[:load_method],
                                    filter_block)
+      end
+
+      # Disables authorization entirely.  Requires at least one symbol corresponding
+      # to an action as parameter.  The special symbol :+all+ refers to all actions.
+      # The all :+all+ statement is only employed if no specific statement is
+      # present.
+      def no_filter_access_to(*args)
+        filter_access_to args do
+          true
+        end
       end
 
       # Collecting all the ControllerPermission objects from the controller
