@@ -112,6 +112,12 @@ class MocksController < ActionController::Base
   end
 end
 
+class User < ActiveRecord::Base
+  attr_accessor :role_symbols
+
+  scope :visible_by, ->(user) { where(id: user.id) }
+end
+
 class TestApp
   class Application < ::Rails::Application
     config.eager_load                 = false
