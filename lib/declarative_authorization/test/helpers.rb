@@ -60,7 +60,7 @@ module DeclarativeAuthorization
           privileges   = @privileges
 
           actions     = options[:to]
-          raise ":to is a required option!" unless actions
+          raise ':to is a required option!' unless actions
 
           actions     = [actions] unless actions.is_a?(Array)
           params_name      = options[:with]
@@ -129,8 +129,7 @@ module DeclarativeAuthorization
 
         def access_tests(&block)
           @access_tests_defined = true
-          @access_tests_defined = true
-          file_output ||= [ 'test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join(".")
+          file_output ||= [ 'test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
           unless File.exists?(file_output)
             FileUtils.mkdir_p(File.dirname(file_output))
           end
@@ -162,7 +161,7 @@ module DeclarativeAuthorization
           super
 
           child.send(:define_method, :test_access_tests_defined) do
-            assert self.class.access_tests_defined, "Access tests needed but not defined."
+            assert self.class.access_tests_defined, 'Access tests needed but not defined.'
           end
 
           child.send(:define_method, :test_all_public_actions_covered_by_role_tests) do
@@ -183,7 +182,7 @@ module DeclarativeAuthorization
       protected
 
       def response_forbidden?
-        flash[:error] == "You do not have the correct permissions to access that page. Click the back button to return to your previous page." ||
+        flash[:error] == 'You do not have the correct permissions to access that page. Click the back button to return to your previous page.' ||
         flash[:error] =~ /You do not have the correct permissions to view this/ ||
         flash[:error] =~ /You do not have access to/ ||
         flash[:alert] =~ /You need to sign in/ ||
@@ -211,7 +210,7 @@ module DeclarativeAuthorization
       end
 
       def access_test_user(role, privilege)
-        raise "MUST IMPLEMENT!!"
+        raise 'MUST IMPLEMENT!!!'
       end
 
       def forbidden_with_role_and_privilege?(action, role, privilege, params_name = nil, options = {})
