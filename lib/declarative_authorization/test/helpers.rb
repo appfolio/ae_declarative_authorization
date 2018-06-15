@@ -127,6 +127,11 @@ module DeclarativeAuthorization
       module ClassMethods
         attr_reader :access_tests_defined
 
+        def skip_access_tests_for_actions(*actions)
+          @skipped_access_test_actions ||= []
+          @skipped_access_test_actions += actions.map(&:to_sym)
+        end
+
         def access_tests(&block)
           @access_tests_defined = true
           file_output ||= [ 'test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
@@ -150,11 +155,15 @@ module DeclarativeAuthorization
         alias :access_tests_not_required :this_is_an_abstract_controller_so_it_needs_no_access_tests
 
         def all_public_actions
-          actions = controller_class.public_instance_methods(false).map(&:to_s)
-          actions += controller_class.superclass.public_instance_methods(false).map(&:to_s)
-          actions.reject! { |method| method =~ /^_/ || method.starts_with?('rescue_action') }
+          actions = controller_class.public_instance_methods(false)
+          actions += controller_class.superclass.public_instance_methods(false)
+          actions.reject! do |method|
+            method =~ /^_/ ||
+              method =~ /^rescue_action/ ||
+              (@skipped_access_test_actions.is_a?(Array) && @skipped_access_test_actions.include?(method))
+          end
 
-          actions.uniq.map(&:to_s) - %w(permitted_to? has_role? has_role_with_hierarchy? has_any_role? has_any_role_with_hierarchy?)
+          actions.uniq
         end
 
         def inherited(child)
