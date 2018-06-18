@@ -30,6 +30,7 @@ module Authorization
   # * AuthorizationRulesReader#lte,
   # * AuthorizationRulesReader#gt,
   # * AuthorizationRulesReader#gte
+  # * AuthorizationRulesReader#id_in_scope
   #
   # And privilege definition methods
   # * PrivilegesReader#privilege,
@@ -208,7 +209,7 @@ module Authorization
       end
 
       def append_role(role, options = {}) # :nodoc:
-        @roles << role unless @roles.include? role
+        @roles << role unless @role_titles.key? role
         @role_titles[role] = options[:title] if options[:title]
         @role_descriptions[role] = options[:description] if options[:description]
       end
@@ -219,7 +220,7 @@ module Authorization
       #     has_permissions_on ...
       #   end
       #
-      def role(role, options = {}, &block)
+      def role(role, options = {})
         append_role role, options
         @current_role = role
         yield
@@ -271,7 +272,7 @@ module Authorization
       #   Join operator to logically connect the constraint statements inside
       #   of the has_permission_on block.  May be :+and+ or :+or+.  Defaults to :+or+.
       #
-      def has_permission_on(*args, &block)
+      def has_permission_on(*args)
         options = args.extract_options!
         context = args.flatten
         
@@ -517,16 +518,21 @@ module Authorization
         [:gte, block]
       end
 
+      def id_in_scope(&block)
+        [:id_in_scope, block]
+      end
+
       private
+
       def parse_attribute_conditions_hash!(hash)
         merge_hash = {}
         hash.each do |key, value|
           if value.is_a?(Hash)
             parse_attribute_conditions_hash!(value)
           elsif !value.is_a?(Array)
-            merge_hash[key] = [:is, proc { value }]
+            merge_hash[key] = [:is, value ]
           elsif value.is_a?(Array) and !value[0].is_a?(Symbol)
-            merge_hash[key] = [:is_in, proc { value }]
+            merge_hash[key] = [:is_in, value ]
           end
         end
         hash.merge!(merge_hash)

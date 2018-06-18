@@ -1,41 +1,37 @@
-require 'pathname'
+require 'rubygems'
+require 'bundler'
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
+end
+
+require 'minitest/autorun'
 
 ENV['RAILS_ENV'] = 'test'
 
-require 'bundler/setup'
-begin
-  # rails 3
-  require 'rails/all'
-rescue LoadError
-  # rails 2.3
-  %w(action_pack action_controller active_record active_support initializer).each {|f| require f}
-end
-Bundler.require
+require 'rails/all'
+require 'test_support/minitest_compatibility'
 
-if Rails.version >= '4.1'
-  require 'minitest/autorun'
-  require 'test_support/minitest_compatibility'
-else
-  require 'test/unit'
+if Rails.version < '4.2'
+  raise "Unsupported Rails version #{Rails.version}"
 end
-
-# Silence Rails 4 deprecation warnings in test suite
-# TODO: Model.scoped is deprecated
-# TODO: Eager loading Post.includes(:comments).where("comments.title = 'foo'") becomes Post.includes(:comments).where("comments.title = 'foo'").references(:comments)
-# if Rails.version >= '4'
-#   ActiveSupport::Deprecation.silenced = true
-# end
 
 puts "Testing against rails #{Rails::VERSION::STRING}"
 
-RAILS_ROOT = File.dirname(__FILE__)
+if Rails.version >= '5.0'
+  require 'rails-controller-testing'
+  Rails::Controller::Testing.install
+end
 
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
-require DA_ROOT + File.join(%w{lib declarative_authorization rails_legacy})
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
+require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
 
 class MockDataObject
   def initialize(attrs = {})
@@ -66,7 +62,7 @@ class MockDataObject
 
   def self.find_or_initialize_by(args)
     raise StandardError, "Syntax error: find_or_initialize by expects a hash: User.find_or_initialize_by(:id => @user.id)" unless args.is_a?(Hash)
-    new :id => args[:id]
+    new args
   end
 end
 
@@ -116,133 +112,63 @@ class MocksController < ActionController::Base
   end
 end
 
-if Rails.version < "3"
-  ActiveRecord::Base.establish_connection({:adapter => 'sqlite3', :database => ':memory:'})
-  ActionController::Routing::Routes.draw do |map|
-    map.connect ':controller/:action/:id'
+class User < ActiveRecord::Base
+  attr_accessor :role_symbols
+
+  scope :visible_by, ->(user) { where(id: user.id) }
+end
+
+class TestApp
+  class Application < ::Rails::Application
+    config.eager_load                 = false
+    config.secret_key_base            = 'testingpurposesonly'
+    config.active_support.deprecation = :stderr
+    config.paths['config/database']   = File.expand_path('../database.yml', __FILE__)
+    config.active_support.test_order  = :random
+    initialize!
   end
-else
-  class TestApp
-    class Application < ::Rails::Application
-      config.eager_load = false
-      config.secret_key_base = "testingpurposesonly"
-      config.active_support.deprecation = :stderr
-      database_path = File.expand_path('../database.yml', __FILE__)
-      if Rails.version.start_with? '3.0.'
-        config.paths.config.database database_path
-      else
-        config.paths['config/database'] = database_path
-      end
-      initialize!
-    end
-  end
-  class ApplicationController < ActionController::Base
-  end
-  #Rails::Application.routes.draw do
-  if Rails.version.start_with? '4'
-    Rails.application.routes.draw do
-      match '/name/spaced_things(/:action)' => 'name/spaced_things', :via => [:get, :post, :put, :patch, :delete]
-      match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', :via => [:get, :post, :put, :patch, :delete]
-      match '/:controller(/:action(/:id))', :via => [:get, :post, :put, :patch, :delete]
-    end
-    class TestApp
-      class Application < ::Rails::Application
-        config.secret_key_base = 'thisstringdoesnothing'
-      end
-    end
-  else
-    Rails.application.routes.draw do
-      match '/name/spaced_things(/:action)' => 'name/spaced_things', :via => [:get, :post, :put, :patch, :delete]
-      match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', :via => [:get, :post, :put, :patch, :delete]
-      match '/:controller(/:action(/:id))', :via => [:get, :post, :put, :patch, :delete]
-    end
-  end
+end
+
+class ApplicationController < ActionController::Base
+end
+
+Rails.application.routes.draw do
+  match '/name/spaced_things(/:action)' => 'name/spaced_things', via: [:get, :post, :put, :patch, :delete]
+  match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', via: [:get, :post, :put, :patch, :delete]
+  match '/:controller(/:action(/:id))', via: [:get, :post, :put, :patch, :delete]
 end
 
 ActionController::Base.send :include, Authorization::AuthorizationInController
-if Rails.version < "3"
-  require "action_controller/test_process"
+
+module Test
+  module Unit
+    class TestCase < Minitest::Test
+      include Authorization::TestHelper
+    end
+  end
 end
 
-
-if Rails.version < "4"
-  class Test::Unit::TestCase
+module ActiveSupport
+  class TestCase
     include Authorization::TestHelper
 
     def request!(user, action, reader, params = {})
-      action = action.to_sym if action.is_a?(String)
-      @controller.current_user = user
+      action                           = action.to_sym if action.is_a?(String)
+      @controller.current_user         = user
       @controller.authorization_engine = Authorization::Engine.new(reader)
 
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
-      get action, params
-    end
-
-    unless Rails.version < "3"
-      def setup
-        #@routes = Rails::Application.routes
-        @routes = Rails.application.routes
+      if Rails.version >= '5.0'
+        get action, params: params
+      else
+        get action, params
       end
     end
-  end
 
-elsif Rails.version < '4.1'
-  class Test::Unit::TestCase
-    include Authorization::TestHelper
-  end
-
-  class ActiveSupport::TestCase
-    include Authorization::TestHelper
-
-    def request!(user, action, reader, params = {})
-      action = action.to_sym if action.is_a?(String)
-      @controller.current_user = user
-      @controller.authorization_engine = Authorization::Engine.new(reader)
-
-      ((params.delete(:clear) || []) + [:@authorized]).each do |var|
-        @controller.instance_variable_set(var, nil)
-      end
-      get action, params
-    end
-
-    unless Rails.version < "3"
-      def setup
-        #@routes = Rails::Application.routes
-        @routes = Rails.application.routes
-      end
-    end
-  end
-else
-  module Test
-    module Unit
-    end
-  end
-
-  class Test::Unit::TestCase < Minitest::Test
-    include Authorization::TestHelper
-  end
-
-  class ActiveSupport::TestCase
-    include Authorization::TestHelper
-
-    def request!(user, action, reader, params = {})
-      action = action.to_sym if action.is_a?(String)
-      @controller.current_user = user
-      @controller.authorization_engine = Authorization::Engine.new(reader)
-
-      ((params.delete(:clear) || []) + [:@authorized]).each do |var|
-        @controller.instance_variable_set(var, nil)
-      end
-      get action, params: params
-    end
-
-    unless Rails.version < "3"
-      def setup
-        #@routes = Rails::Application.routes
-        @routes = Rails.application.routes
-      end
+    def setup
+      @routes = Rails.application.routes
     end
   end
 end

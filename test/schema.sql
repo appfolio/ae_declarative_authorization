@@ -54,3 +54,7 @@ CREATE TABLE 'countries' (
   'id' INTEGER PRIMARY KEY NOT NULL,
   'name' text
 );
+
+CREATE TABLE 'users' (
+  'id' INTEGER PRIMARY KEY NOT NULL
+);

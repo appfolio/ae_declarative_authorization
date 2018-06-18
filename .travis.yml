@@ -1,13 +1,19 @@
 language: ruby
 script: bundle exec rake test
 rvm:
-  - 2.0
-  - 2.1
-  - 2.2
+  - 2.1.9
+  - 2.2.8
+  - 2.3.3
+  - 2.4.2
 gemfile:
-  - gemfiles/4.0.gemfile
-  - gemfiles/4.1.gemfile
+  - gemfiles/rails4252.gemfile
+  - gemfiles/rails4271.gemfile
+  - gemfiles/rails507.gemfile
 matrix:
   exclude:
-    - rvm: 2.0.0
-      gemfile: gemfiles/4.1.gemfile
+  - rvm: 2.1.9
+    gemfile: gemfiles/rails507.gemfile
+  - rvm: 2.4.2
+    gemfile: gemfiles/rails4252.gemfile
+  - rvm: 2.4.2
+    gemfile: gemfiles/rails4271.gemfile

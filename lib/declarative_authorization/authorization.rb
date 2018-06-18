@@ -25,12 +25,20 @@ module Authorization
   # Controller-independent method for retrieving the current user.
   # Needed for model security where the current controller is not available.
   def self.current_user
-    Thread.current["current_user"] || AnonymousUser.new
+    Thread.current["current_user"] || guest_user
   end
 
   # Controller-independent method for setting the current user.
   def self.current_user=(user)
     Thread.current["current_user"] = user
+  end
+
+  def self.guest_user
+    @@guest_user ||= AnonymousUser.new
+  end
+
+  def self.non_guest_current_user
+    current_user unless current_user.is_a?(AnonymousUser)
   end
 
   # For use in test cases only
@@ -58,11 +66,7 @@ module Authorization
   end
 
   def self.is_a_association_proxy?(object)
-    if Rails.version < "3.2"
-      object.respond_to?(:proxy_reflection)
-    else
-      object.respond_to?(:proxy_association)
-    end
+    object.respond_to?(:proxy_association)
   end
 
   # Authorization::Engine implements the reference monitor.  It may be used
@@ -160,7 +164,7 @@ module Authorization
       # Example: permit!( :edit, :object => user.posts )
       #
       if Authorization.is_a_association_proxy?(options[:object]) && options[:object].respond_to?(:new)
-        options[:object] = (Rails.version < "3.0" ? options[:object] : options[:object].where(nil)).new
+        options[:object] = options[:object].where(nil).new
       end
 
       options[:context] ||= options[:object] && (
@@ -171,7 +175,7 @@ module Authorization
 
       user, roles, privileges = user_roles_privleges_from_options(privilege, options)
 
-      return true if roles.is_a?(Array) and not (roles & omnipotent_roles).empty?
+      return true if roles.is_a?(Hash) && !(roles.keys & omnipotent_roles).empty?
 
       # find a authorization rule that matches for at least one of the roles and
       # at least one of the given privileges
@@ -229,7 +233,7 @@ module Authorization
 
       permit!(privilege, :skip_attribute_test => true, :user => user, :context => options[:context])
 
-      return [] if roles.is_a?(Array) and not (roles & omnipotent_roles).empty?
+      return [] if roles.is_a?(Hash) && !(roles.keys & omnipotent_roles).empty?
 
       attr_validator = AttributeValidator.new(self, user, nil, privilege, options[:context])
       matching_auth_rules(roles, privileges, options[:context]).collect do |rule|
@@ -314,11 +318,16 @@ module Authorization
 
       def evaluate(value_block)
         # TODO cache?
-        instance_eval(&value_block)
+        if value_block.is_a? Proc
+          instance_eval(&value_block)
+        else
+          value_block
+        end
       end
     end
 
     private
+
     def user_roles_privleges_from_options(privilege, options)
       options = {
         :user => nil,
@@ -336,25 +345,33 @@ module Authorization
       [user, roles, privileges]
     end
 
-    def flatten_roles(roles, flattened_roles = Set.new)
-      # TODO caching?
-      roles.reject {|role| flattened_roles.include?(role)}.each do |role|
-        flattened_roles << role
-        flatten_roles(role_hierarchy[role], flattened_roles) if role_hierarchy[role]
+    def flatten_roles(roles)
+      # TODO: caching?
+      hierarchy = role_hierarchy
+      flattened_roles = {}
+      roles.each do |role|
+        flattened_roles[role] = true
+        if (hierarchy_for_role = hierarchy[role])
+          hierarchy_for_role.each do |r|
+            flattened_roles[r] = true
+          end
+        end
       end
-      flattened_roles.to_a
+      flattened_roles
     end
 
     # Returns the privilege hierarchy flattened for given privileges in context.
-    def flatten_privileges(privileges, context = nil, flattened_privileges = Set.new)
-      # TODO caching?
-      raise AuthorizationUsageError, "No context given or inferable from object" unless context
-      privileges.reject {|priv| flattened_privileges.include?(priv)}.each do |priv|
-        flattened_privileges << priv
-        flatten_privileges(rev_priv_hierarchy[[priv, nil]], context, flattened_privileges) if rev_priv_hierarchy[[priv, nil]]
-        flatten_privileges(rev_priv_hierarchy[[priv, context]], context, flattened_privileges) if rev_priv_hierarchy[[priv, context]]
+    def flatten_privileges(privileges, context = nil)
+      # TODO: caching?
+      raise AuthorizationUsageError, 'No context given or inferable from object' unless context
+      hierarchy = rev_priv_hierarchy
+
+      flattened_privileges = privileges.clone
+      flattened_privileges.each do |priv|
+        flattened_privileges.concat(hierarchy[[priv, nil]]) if hierarchy[[priv, nil]]
+        flattened_privileges.concat(hierarchy[[priv, context]]) if hierarchy[[priv, context]]
       end
-      flattened_privileges.to_a
+      flattened_privileges.uniq
     end
 
     def matching_auth_rules(roles, privileges, context)
@@ -379,7 +396,6 @@ module Authorization
     end
 
     def matching(roles, privileges, context)
-      roles = [roles] unless roles.is_a?(Array)
       rules = cached_auth_rules[context] || []
       rules.select do |rule|
         rule.matches? roles, privileges, context
@@ -448,9 +464,8 @@ module Authorization
     end
 
     def matches?(roles, privs, context = nil)
-      roles = [roles] unless roles.is_a?(Array)
-      @contexts.include?(context) and roles.include?(@role) and
-        not (@privileges & privs).empty?
+      roles = Hash[[*roles].map { |r| [r, true] }] unless roles.is_a?(Hash)
+      @contexts.include?(context) && roles.include?(@role) && privs.any? { |priv| @privileges.include?(priv) }
     end
 
     def validate?(attr_validator, skip_attribute = false)
@@ -519,8 +534,7 @@ module Authorization
       object ||= attr_validator.object
       return false unless object
 
-      if ( Authorization.is_a_association_proxy?(object) &&
-           object.respond_to?(:empty?) )
+      if Authorization.is_a_association_proxy?(object) && object.respond_to?(:empty?)
         return false if object.empty?
         object.each do |member|
           return true if validate?(attr_validator, member, hash)
@@ -599,6 +613,8 @@ module Authorization
             attr_value && attr_value > evaluated
           when :gte
             attr_value && attr_value >= evaluated
+          when :id_in_scope
+            evaluated.exists?(attr_value)
           else
             raise AuthorizationError, "Unknown operator #{value[0]}"
           end
@@ -777,7 +793,6 @@ module Authorization
       "if_permitted_to #{@privilege.inspect}, #{@attr_hash.inspect}"
     end
 
-    private
     def self.reflection_for_path(parent_model, path)
       reflection = path.empty? ? parent_model : begin
         parent = reflection_for_path(parent_model, path[0..-2])
@@ -800,5 +815,7 @@ module Authorization
     def initialize(roles = [Authorization.default_role])
       @role_symbols = roles
     end
+
+    def id; end
   end
 end

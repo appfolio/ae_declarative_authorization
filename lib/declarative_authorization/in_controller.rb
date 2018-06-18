@@ -62,7 +62,7 @@ module Authorization
     # content should only be shown to some users without being concerned
     # with authorization.  E.g. to only show the most relevant menu options
     # to a certain group of users.  That is what has_role? should be used for.
-    def has_role?(*roles, &block)
+    def has_role?(*roles)
       user_roles = authorization_engine.roles_for(current_user)
       result = roles.all? do |role|
         user_roles.include?(role)
@@ -73,7 +73,7 @@ module Authorization
 
     # Intended to be used where you want to allow users with any single listed role to view
     # the content in question
-    def has_any_role?(*roles,&block)
+    def has_any_role?(*roles)
       user_roles = authorization_engine.roles_for(current_user)
       result = roles.any? do |role|
         user_roles.include?(role)
@@ -83,7 +83,7 @@ module Authorization
     end
 
     # As has_role? except checks all roles included in the role hierarchy
-    def has_role_with_hierarchy?(*roles, &block)
+    def has_role_with_hierarchy?(*roles)
       user_roles = authorization_engine.roles_with_hierarchy_for(current_user)
       result = roles.all? do |role|
         user_roles.include?(role)
@@ -93,7 +93,7 @@ module Authorization
     end
 
     # As has_any_role? except checks all roles included in the role hierarchy
-    def has_any_role_with_hierarchy?(*roles, &block)
+    def has_any_role_with_hierarchy?(*roles)
       user_roles = authorization_engine.roles_with_hierarchy_for(current_user)
       result = roles.any? do |role|
         user_roles.include?(role)
@@ -202,7 +202,7 @@ module Authorization
       #
       # Defines a filter to be applied according to the authorization of the
       # current user.  Requires at least one symbol corresponding to an
-      # action as parameter.  The special symbol :+all+ refers to all action.
+      # action as parameter.  The special symbol :+all+ refers to all actions.
       # The all :+all+ statement is only employed if no specific statement is
       # present.
       #   class UserController < ApplicationController
@@ -325,6 +325,16 @@ module Authorization
                                    options[:model],
                                    options[:load_method],
                                    filter_block)
+      end
+
+      # Disables authorization entirely.  Requires at least one symbol corresponding
+      # to an action as parameter.  The special symbol :+all+ refers to all actions.
+      # The all :+all+ statement is only employed if no specific statement is
+      # present.
+      def no_filter_access_to(*args)
+        filter_access_to args do
+          true
+        end
       end
 
       # Collecting all the ControllerPermission objects from the controller
@@ -498,8 +508,7 @@ module Authorization
           :nested_in  => nil,
           :strong_parameters => nil
         }.merge(options)
-        options.merge!({ :strong_parameters => true }) if Rails.version >= '4' && options[:strong_parameters] == nil
-        options.merge!({ :strong_parameters => false }) if Rails.version < '4' && options[:strong_parameters] == nil
+        options.merge!({ :strong_parameters => true }) if options[:strong_parameters] == nil
 
         new_actions = actions_from_option( options[:new] ).merge(
             actions_from_option(options[:additional_new]) )

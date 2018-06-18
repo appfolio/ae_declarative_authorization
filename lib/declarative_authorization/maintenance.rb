@@ -15,8 +15,10 @@ module Authorization
     #  without_access_control do
     #    SomeModel.find(:first).save
     #  end
-    def without_access_control(&block)
-      Authorization::Maintenance.without_access_control(&block)
+    def without_access_control
+      Authorization::Maintenance.without_access_control() do
+        yield if block_given?
+      end
     end
 
     # A class method variant of without_access_control.  Thus, one can call
@@ -36,8 +38,10 @@ module Authorization
     # Sets the current user for the declarative authorization plugin to the
     # given one for the execution of the supplied block.  Suitable for tests
     # on certain users.
-    def with_user(user, &block)
-      Authorization::Maintenance.with_user(user, &block)
+    def with_user(user)
+      Authorization::Maintenance.with_user(user) do
+        yield if block_given?
+      end
     end
 
     def self.with_user(user)
@@ -139,9 +143,11 @@ module Authorization
 
     # Analogue to the Ruby's assert_raise method, only executing the block
     # in the context of the given user.
-    def assert_raise_with_user(user, *args, &block)
+    def assert_raise_with_user(user, *args)
       assert_raise(*args) do
-        with_user(user, &block)
+        with_user(user) do
+          yield if block_given?
+        end
       end
     end
 
