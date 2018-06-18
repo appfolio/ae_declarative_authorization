@@ -1,3 +1,3 @@
 module DeclarativeAuthorization
-  VERSION = '0.6.0.pre3'.freeze
+  VERSION = '0.6.0'.freeze
 end
