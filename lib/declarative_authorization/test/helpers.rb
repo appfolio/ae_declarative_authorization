@@ -229,8 +229,9 @@ module DeclarativeAuthorization
         user = access_test_user(role, privilege)
         params = access_test_params(params_name)
 
-        send_args = [http_method, action.to_sym, params]
-        send_args.unshift :xhr if xhr
+        send_args = [http_method, action.to_sym]
+        send_kwargs = { params: params }
+        send_kwargs[:xhr] = true if xhr
 
         errors_to_reraise = [
           ActionController::RoutingError,
@@ -241,7 +242,7 @@ module DeclarativeAuthorization
         errors_to_reraise << Mocha::ExpectationError if defined?(Mocha::ExpectationError)
 
         begin
-          send *send_args
+          send *send_args, **send_kwargs
           return response_forbidden?
         rescue *errors_to_reraise => e
           raise e
