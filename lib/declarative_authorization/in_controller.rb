@@ -1,8 +1,12 @@
 # Authorization::AuthorizationInController
 require File.dirname(__FILE__) + '/authorization.rb'
+require File.dirname(__FILE__) + '/controller_adapters/action_controller_adapter.rb'
 
 module Authorization
   module AuthorizationInController
+
+    class UnsupportedControllerTypeException < Exception
+    end
 
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
@@ -103,17 +107,27 @@ module Authorization
     end
 
     protected
+
+    def create_controller_adapter(controller)
+      if controller.is_a?(ActionController::Base)
+        ControllerAdapters::ActionControllerAdapter.new(controller)
+      else
+        raise UnsupportedControllerTypeException()
+      end
+    end
+
     def filter_access_filter # :nodoc:
-      permissions = self.class.all_filter_access_permissions
+      controller_adapter = create_controller_adapter(self)
+      permissions = controller_adapter.all_filter_access_permissions
       all_permissions = permissions.select {|p| p.actions.include?(:all)}
       matching_permissions = permissions.select {|p| p.matches?(action_name)}
       allowed = false
       auth_exception = nil
       begin
         allowed = if !matching_permissions.empty?
-                    matching_permissions.all? {|perm| perm.permit!(self)}
+                    matching_permissions.all? {|perm| perm.permit!(controller_adapter)}
                   elsif !all_permissions.empty?
-                    all_permissions.all? {|perm| perm.permit!(self)}
+                    all_permissions.all? {|perm| perm.permit!(controller_adapter)}
                   else
                     !DEFAULT_DENY
                   end
@@ -128,9 +142,9 @@ module Authorization
         elsif auth_exception
           logger.info "Permission denied: #{auth_exception}"
         end
-        if respond_to?(:permission_denied, true)
+        if controller_adapter.controller_defines_permission_denied?
           # permission_denied needs to render or redirect
-          send(:permission_denied)
+          controller_adapter.permission_denied
         else
           send(:render, :plain => "You are not allowed to access this action.",
             :status => :forbidden)
@@ -662,52 +676,23 @@ module Authorization
       @actions.include?(action_name.to_sym)
     end
 
-    def permit!(contr)
+    def permit!(controller_adapter)
       if @filter_block
-        return contr.instance_eval(&@filter_block)
+        return controller_adapter.controller_instance_eval(@filter_block)
       end
-      object = @attribute_check ? load_object(contr) : nil
-      privilege = @privilege || :"#{contr.action_name}"
+      object = @attribute_check ? controller_adapter.load_object(context, strong_params, @load_object_model, @load_object_method) : nil
+      privilege = @privilege || :"#{controller_adapter.action_name}"
 
-      contr.authorization_engine.permit!(privilege,
-                                         :user => contr.send(:current_user),
+      controller_adapter.authorization_engine.permit!(privilege,
+                                         :user => controller_adapter.current_user,
                                          :object => object,
                                          :skip_attribute_test => !@attribute_check,
-                                         :context => @context || contr.class.decl_auth_context)
+                                         :context => @context || controller_adapter.decl_auth_context)
     end
 
     def remove_actions(actions)
       @actions -= actions
       self
-    end
-
-    private
-
-    def load_object(contr)
-      if @load_object_method and @load_object_method.is_a?(Symbol)
-        contr.send(@load_object_method)
-      elsif @load_object_method and @load_object_method.is_a?(Proc)
-        contr.instance_eval(&@load_object_method)
-      else
-        load_object_model = @load_object_model ||
-            (@context ? @context.to_s.classify.constantize : contr.class.controller_name.classify.constantize)
-        load_object_model = load_object_model.classify.constantize if load_object_model.is_a?(String)
-        instance_var = "@#{load_object_model.name.demodulize.underscore}"
-        object = contr.instance_variable_get(instance_var)
-        unless object
-          begin
-            object = @strong_params ? load_object_model.find_or_initialize_by(:id => contr.params[:id]) : load_object_model.find(contr.params[:id])
-          rescue => e
-            contr.logger.debug("filter_access_to tried to find " +
-                "#{load_object_model} from params[:id] " +
-                "(#{contr.params[:id].inspect}), because attribute_check is enabled " +
-                "and #{instance_var.to_s} isn't set, but failed: #{e.class.name}: #{e}")
-            raise if AuthorizationInController.failed_auto_loading_is_not_found?
-          end
-          contr.instance_variable_set(instance_var, object)
-        end
-        object
-      end
     end
   end
 end
