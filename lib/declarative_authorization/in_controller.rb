@@ -1,6 +1,7 @@
 # Authorization::AuthorizationInController
 require File.dirname(__FILE__) + '/authorization.rb'
 require File.dirname(__FILE__) + '/controller_adapters/action_controller_adapter.rb'
+require File.dirname(__FILE__) + '/controller_adapters/praxis_controller_adapter.rb'
 
 module Authorization
   module AuthorizationInController
@@ -111,6 +112,8 @@ module Authorization
     def create_controller_adapter(controller)
       if controller.is_a?(ActionController::Base)
         ControllerAdapters::ActionControllerAdapter.new(controller)
+      elsif controller.class.name == "Praxis::Controller"
+        ControllerAdapters::PraxisControllerAdapter.new(controller)
       else
         raise UnsupportedControllerTypeException()
       end
