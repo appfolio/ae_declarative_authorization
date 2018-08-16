@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_dependency(%q<blockenspiel>, ['~> 0.5.0'])
-  s.add_dependency(%q<rails>, ['>= 4.2.5.2', '< 5.1'])
+  s.add_dependency(%q<rails>, ['>= 4.2.5.2', '< 6'])
 end
