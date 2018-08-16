@@ -45,7 +45,10 @@ module Authorization
   class ObligationScope < ActiveRecord::Relation
     def initialize(model, options)
       @finder_options = {}
-      if Rails.version >= '5'
+
+      if Rails.version >= "5.2"
+        super(model, table: model.table_name)
+      elsif Rails.version >= "5"
         super(model, model.table_name, nil)
       else
 	      super(model, model.table_name)
