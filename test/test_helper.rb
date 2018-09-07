@@ -30,6 +30,7 @@ DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
+require DA_ROOT + File.join(%w{lib declarative_authorization in_praxis_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
 
@@ -118,6 +119,8 @@ class User < ActiveRecord::Base
   scope :visible_by, ->(user) { where(id: user.id) }
 end
 
+require DA_ROOT + 'test/praxis_test_engine'
+
 class TestApp
   class Application < ::Rails::Application
     config.eager_load                 = false
@@ -129,6 +132,8 @@ class TestApp
   end
 end
 
+require DA_ROOT + 'test/praxis_test_helper'
+
 class ApplicationController < ActionController::Base
 end
 
@@ -136,6 +141,8 @@ Rails.application.routes.draw do
   match '/name/spaced_things(/:action)' => 'name/spaced_things', via: [:get, :post, :put, :patch, :delete]
   match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', via: [:get, :post, :put, :patch, :delete]
   match '/:controller(/:action(/:id))', via: [:get, :post, :put, :patch, :delete]
+
+  mount PraxisTestEngine, at: "/praxis_test_engine", as: "praxis_test_engine"
 end
 
 ActionController::Base.send :include, Authorization::AuthorizationInController

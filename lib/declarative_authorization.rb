@@ -1,5 +1,6 @@
 require File.join(%w{declarative_authorization helper})
 require File.join(%w{declarative_authorization in_controller})
+require File.join(%w{declarative_authorization in_praxis_controller})
 if defined?(ActiveRecord)
   require File.join(%w{declarative_authorization in_model})
   require File.join(%w{declarative_authorization obligation_scope})

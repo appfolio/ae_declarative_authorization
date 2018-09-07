@@ -1436,10 +1436,10 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.current_user = MockUser.new(:test_role)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
     assert(object = TestModelSecurityModel.create)
 
-    Authorization.current_user = MockUser.new(:test_role_restricted)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role_restricted))
     assert_raise Authorization::NotAuthorized do
       object.update_attributes(:attr_2 => 2)
     end
@@ -1503,11 +1503,11 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.current_user = MockUser.new(:test_role_unrestricted)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role_unrestricted))
     object = TestModelSecurityModel.create :attr => 2
     object_with_find = TestModelSecurityModelWithFind.create :attr => 2
 
-    Authorization.current_user = MockUser.new(:test_role)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
     assert_nothing_raised do
       object.class.find(object.id)
     end
@@ -1559,9 +1559,9 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.current_user = MockUser.new(:test_role_unrestricted)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role_unrestricted))
     object = TestModelSecurityModel.create :attr => 2
-    Authorization.current_user = MockUser.new(:test_role)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
     assert_raise Authorization::AttributeAuthorizationError do
       object.destroy
     end
