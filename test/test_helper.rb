@@ -29,7 +29,7 @@ end
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
-require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
+require DA_ROOT + File.join(%w{lib declarative_authorization controller rails})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
 
@@ -138,7 +138,7 @@ Rails.application.routes.draw do
   match '/:controller(/:action(/:id))', via: [:get, :post, :put, :patch, :delete]
 end
 
-ActionController::Base.send :include, Authorization::AuthorizationInController
+ActionController::Base.send :include, Authorization::Controller::Rails
 
 module Test
   module Unit
