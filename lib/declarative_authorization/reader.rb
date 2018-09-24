@@ -284,7 +284,7 @@ module Authorization
         raise DSLError, "has_permission_on either needs a block or :to option" if !block_given? and privs.empty?
 
         file, line = file_and_line_number_from_call_stack
-        rule = AuthorizationRule.new(@current_role, privs, context, options[:join_by],
+        rule = AuthorizationRule.new(@current_role, privs.map(&:to_sym), context, options[:join_by],
                    :source_file => file, :source_line => line)
         @auth_rules << rule
         if block_given?
