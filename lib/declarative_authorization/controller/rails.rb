@@ -285,9 +285,9 @@ module Authorization
 
         begin
           allowed = if !matching_permissions.empty?
-                      matching_permissions.all? {|perm| perm.permit!(self)}
+                      matching_permissions.all? {|perm| perm.permit!(self, action_name)}
                     elsif !all_permissions.empty?
-                      all_permissions.all? {|perm| perm.permit!(self)}
+                      all_permissions.all? {|perm| perm.permit!(self, action_name)}
                     else
                       !DEFAULT_DENY
                     end

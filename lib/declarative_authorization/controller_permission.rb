@@ -18,18 +18,18 @@ module Authorization
       @actions.include?(action_name.to_sym)
     end
 
-    def permit!(contr)
+    def permit!(contr, action_name)
       if @filter_block
         return contr.instance_eval(&@filter_block)
       end
       object = @attribute_check ? load_object(contr) : nil
-      privilege = @privilege || :"#{contr.action_name}"
+      privilege = @privilege || :"#{action_name}"
 
       contr.authorization_engine.permit!(privilege,
                                          :user => contr.send(:current_user),
                                          :object => object,
                                          :skip_attribute_test => !@attribute_check,
-                                         :context => @context || contr.class.decl_auth_context)
+                                         :context => @context || controller_class(contr).decl_auth_context)
     end
 
     def remove_actions(actions)
@@ -46,7 +46,7 @@ module Authorization
         contr.instance_eval(&@load_object_method)
       else
         load_object_model = @load_object_model ||
-            (@context ? @context.to_s.classify.constantize : contr.class.controller_name.classify.constantize)
+            (@context ? @context.to_s.classify.constantize : object_class(contr))
         load_object_model = load_object_model.classify.constantize if load_object_model.is_a?(String)
         instance_var = "@#{load_object_model.name.demodulize.underscore}"
         object = contr.instance_variable_get(instance_var)
@@ -64,6 +64,22 @@ module Authorization
         end
         object
       end
+    end
+
+    def controller_class(contr)
+      if defined?(Grape) && contr.class < Grape::Endpoint
+        contr.options[:for] # Grape controller
+      else
+        contr.class         # Rails controller
+      end
+    end
+
+    def object_class(contr)
+      contr_class = controller_class(contr)
+
+      name = contr_class.respond_to?(:controller_name) ? contr_class.controller_name : contr_class.name.demodulize
+
+      name.classify.constantize
     end
   end
 end

@@ -164,8 +164,9 @@ module Authorization
       #   AnyName::Space::ThingsController => :any_name_space_things
       #
       def decl_auth_context
+        contr_name = respond_to?(:controller_name) ? controller_name : name.demodulize.underscore
         prefixes = name.split('::')[0..-2].map(&:underscore)
-        ((prefixes + [controller_name]) * '_').to_sym
+        ((prefixes + [contr_name]) * '_').to_sym
       end
 
       protected
