@@ -155,6 +155,19 @@ module Authorization
         end
       end
 
+      # Returns the context for authorization checks in the current controller.
+      # Uses the controller_name and prepends any namespaces underscored and
+      # joined with underscores.
+      #
+      # E.g.
+      #   AllThosePeopleController         => :all_those_people
+      #   AnyName::Space::ThingsController => :any_name_space_things
+      #
+      def decl_auth_context
+        prefixes = name.split('::')[0..-2].map(&:underscore)
+        ((prefixes + [controller_name]) * '_').to_sym
+      end
+
       protected
 
       def filter_access_permissions # :nodoc:
