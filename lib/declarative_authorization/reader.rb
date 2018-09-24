@@ -178,6 +178,7 @@ module Authorization
       def includes(*privileges)
         raise DSLError, "includes only in privilege block" if @current_priv.nil?
         privileges.each do |priv|
+          priv = priv.to_sym
           append_privilege priv
           @privilege_hierarchy[@current_priv] ||= []
           @privilege_hierarchy[@current_priv] << [priv, @current_context]
