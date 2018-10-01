@@ -15,21 +15,21 @@ module Authorization
     end
 
     def matches?(action_name)
-      @actions.include?(action_name.to_sym)
+      @actions.include?(action_name.to_sym) || @actions.include?(action_name)
     end
 
-    def permit!(contr)
+    def permit!(contr, action_name)
       if @filter_block
         return contr.instance_eval(&@filter_block)
       end
       object = @attribute_check ? load_object(contr) : nil
-      privilege = @privilege || :"#{contr.action_name}"
+      privilege = @privilege || :"#{action_name}"
 
       contr.authorization_engine.permit!(privilege,
                                          :user => contr.send(:current_user),
                                          :object => object,
                                          :skip_attribute_test => !@attribute_check,
-                                         :context => @context || contr.class.decl_auth_context)
+                                         :context => @context || controller_class(contr).decl_auth_context)
     end
 
     def remove_actions(actions)
@@ -46,7 +46,7 @@ module Authorization
         contr.instance_eval(&@load_object_method)
       else
         load_object_model = @load_object_model ||
-            (@context ? @context.to_s.classify.constantize : contr.class.controller_name.classify.constantize)
+            (@context ? @context.to_s.classify.constantize : object_class(contr))
         load_object_model = load_object_model.classify.constantize if load_object_model.is_a?(String)
         instance_var = "@#{load_object_model.name.demodulize.underscore}"
         object = contr.instance_variable_get(instance_var)
@@ -58,12 +58,25 @@ module Authorization
                 "#{load_object_model} from params[:id] " +
                 "(#{contr.params[:id].inspect}), because attribute_check is enabled " +
                 "and #{instance_var.to_s} isn't set, but failed: #{e.class.name}: #{e}")
-            raise if AuthorizationInController.failed_auto_loading_is_not_found?
+            raise if Authorization::Controller::Runtime.failed_auto_loading_is_not_found?
           end
           contr.instance_variable_set(instance_var, object)
         end
         object
       end
+    end
+
+    def controller_class(contr)
+      if defined?(Grape) && contr.class < Grape::Endpoint
+        contr.options[:for] # Grape controller
+      else
+        contr.class         # Rails controller
+      end
+    end
+
+    def object_class(contr)
+      contr_class = controller_class(contr)
+      contr_class.controller_name.classify.constantize
     end
   end
 end

@@ -15,21 +15,9 @@ ENV['RAILS_ENV'] = 'test'
 require 'rails/all'
 require 'test_support/minitest_compatibility'
 
-if Rails.version < '4.2'
-  raise "Unsupported Rails version #{Rails.version}"
-end
-
-puts "Testing against rails #{Rails::VERSION::STRING}"
-
-if Rails.version >= '5.0'
-  require 'rails-controller-testing'
-  Rails::Controller::Testing.install
-end
-
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
-require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
 
@@ -77,68 +65,11 @@ class MockUser < MockDataObject
   end
 end
 
-class MocksController < ActionController::Base
-  attr_accessor :current_user
-  attr_writer :authorization_engine
-
-  def authorized?
-    !!@authorized
-  end
-
-  def self.define_action_methods(*methods)
-    methods.each do |method|
-      define_method method do
-        @authorized = true
-        render :plain => 'nothing'
-      end
-    end
-  end
-
-  def self.define_resource_actions
-    define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
-  end
-
-  def logger(*args)
-    Class.new do
-      def warn(*args)
-        #p args
-      end
-      alias_method :info, :warn
-      alias_method :debug, :warn
-      def warn?; end
-      alias_method :info?, :warn?
-      alias_method :debug?, :warn?
-    end.new
-  end
-end
-
 class User < ActiveRecord::Base
   attr_accessor :role_symbols
 
   scope :visible_by, ->(user) { where(id: user.id) }
 end
-
-class TestApp
-  class Application < ::Rails::Application
-    config.eager_load                 = false
-    config.secret_key_base            = 'testingpurposesonly'
-    config.active_support.deprecation = :stderr
-    config.paths['config/database']   = File.expand_path('../database.yml', __FILE__)
-    config.active_support.test_order  = :random
-    initialize!
-  end
-end
-
-class ApplicationController < ActionController::Base
-end
-
-Rails.application.routes.draw do
-  match '/name/spaced_things(/:action)' => 'name/spaced_things', via: [:get, :post, :put, :patch, :delete]
-  match '/deep/name_spaced/things(/:action)' => 'deep/name_spaced/things', via: [:get, :post, :put, :patch, :delete]
-  match '/:controller(/:action(/:id))', via: [:get, :post, :put, :patch, :delete]
-end
-
-ActionController::Base.send :include, Authorization::AuthorizationInController
 
 module Test
   module Unit
@@ -160,10 +91,13 @@ module ActiveSupport
       ((params.delete(:clear) || []) + [:@authorized]).each do |var|
         @controller.instance_variable_set(var, nil)
       end
+
+      method = params.delete(:method) || :get
+
       if Rails.version >= '5.0'
-        get action, params: params
+        send method, action, params: params
       else
-        get action, params
+        send method, action, params
       end
     end
 
@@ -172,3 +106,5 @@ module ActiveSupport
     end
   end
 end
+
+require 'test_support/rails'
