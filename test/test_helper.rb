@@ -108,3 +108,4 @@ module ActiveSupport
 end
 
 require 'test_support/rails'
+require 'test_support/grape'
