@@ -108,4 +108,10 @@ module ActiveSupport
 end
 
 require 'test_support/rails'
-require 'test_support/grape'
+
+begin
+  require 'grape'
+  require 'test_support/grape'
+rescue LoadError
+  # Grape is not defined in the gemspec so the Grape tests will not be run
+end
