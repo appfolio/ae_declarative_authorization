@@ -5,8 +5,8 @@ if defined?(ActiveRecord)
   require File.join(%w{declarative_authorization obligation_scope})
 end
 
-min_rails_version = '4.2.5.2'
-if Rails::VERSION::STRING < min_rails_version
+min_rails_version = Gem::Version.new('4.2.5.2')
+if Gem::Version.new(Rails::VERSION::STRING) < min_rails_version
   raise "ae_declarative_authorization requires Rails #{min_rails_version}. You are using #{Rails::VERSION::STRING}."
 end
 
