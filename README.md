@@ -1,6 +1,6 @@
 # Declarative Authorization
 
-The declarative authorization plugin offers an authorization mechanism inspired 
+The declarative authorization plugin offers an authorization mechanism inspired
 by _RBAC_. The most notable distinction to other authorization plugins is the
 declarative approach. That is, authorization rules are not defined
 programmatically in between business logic but in an authorization configuration.
@@ -25,7 +25,7 @@ Plugin features
 
 
 Requirements
-* An authentication mechanism 
+* An authentication mechanism
   * User object in Controller#current_user
   * (For model security) Setting Authorization.current_user
 * User objects need to respond to a method `:role_symbols` that returns an
@@ -85,7 +85,7 @@ authorization do
     # add permissions for guests here, e.g.
     # has_permission_on :conferences, :to => :read
   end
-  
+
   # permissions on other roles, such as
   # role :admin do
   #   has_permission_on :conferences, :to => :manage
@@ -157,12 +157,12 @@ Declarative Authorization will use `current_user` to check authorization.
                                 '-----------'   '---------'  '-----------'
 ```
 
-In the application domain, each *User* may be assigned to *Roles* that should 
-define the users' job in the application, such as _Administrator_. On the 
-right-hand side of this diagram, application developers specify which *Permissions* 
+In the application domain, each *User* may be assigned to *Roles* that should
+define the users' job in the application, such as _Administrator_. On the
+right-hand side of this diagram, application developers specify which *Permissions*
 are necessary for users to perform activities, such as calling a controller action,
 viewing parts of a View or acting on records in the database. Note that
-Permissions consist of an *Privilege* that is to be performed, such as _read_, 
+Permissions consist of an *Privilege* that is to be performed, such as _read_,
 and a *Context* in that the Operation takes place, such as _companies_.
 
 In the authorization configuration, Permissions are assigned to Roles and Role
@@ -192,7 +192,7 @@ class EmployeesController < ApplicationController
 end
 ```
 
-See `Authorization::AuthorizationInController::ClassMethods` for options on
+See `Authorization::Controller::DSL` for options on
 nested resources and custom member and collection actions.
 
 By default, Declarative Authorization will enable `filter_resource_access` compatibility with `strong_parameters`.
@@ -237,7 +237,7 @@ end
 ```
 
 For some actions it might be necessary to check certain attributes of the
-object the action is to be acting on. Then, the object needs to be loaded 
+object the action is to be acting on. Then, the object needs to be loaded
 before the action's access control is evaluated. On the other hand, some actions
 might prefer the authorization to ignore specific attribute checks as the object is
 unknown at checking time, so attribute checks and thus automatic loading of
@@ -275,9 +275,9 @@ end
 
 If the access is denied, a `permission_denied` method is called on the
 current_controller, if defined, and the issue is logged.
-For further customization of the filters and object loading, have a look at 
-the complete API documentation of `filter_access_to` in 
-`Authorization::AuthorizationInController::ClassMethods`.
+For further customization of the filters and object loading, have a look at
+the complete API documentation of `filter_access_to` in
+`Authorization::Controller::DSL`.
 
 
 ## Views
@@ -337,8 +337,8 @@ end
 Thus,
     `Employee.create(...)`
 fails, if the current user is not allowed to `:create` `:employees` according
-to the authorization rules. For the application to find out about what 
-happened if an operation is denied, the filters throw 
+to the authorization rules. For the application to find out about what
+happened if an operation is denied, the filters throw
 `Authorization::NotAuthorized` exceptions.
 
 As access control on read are costly, with possibly lots of objects being
@@ -366,8 +366,8 @@ the usual find method:
 Employee.with_permissions_to(:read).find(:all, :conditions => ...)
 ```
 
-If the current user is completely missing the permissions, an 
-`Authorization::NotAuthorized` exception is raised. Through 
+If the current user is completely missing the permissions, an
+`Authorization::NotAuthorized` exception is raised. Through
 `Model.obligation_conditions`, application developers may retrieve
 the conditions for manual rewrites.
 
@@ -422,9 +422,9 @@ privileges do
   privilege :manage, :employees, :includes => :increase_salary
 end
 ```
-For more complex use cases, authorizations need to be based on attributes. Note 
+For more complex use cases, authorizations need to be based on attributes. Note
 that you then also need to set `:attribute_check => true` in controllers for `filter_access_to`.
-E.g. if a branch admin should manage only employees of his branch (see 
+E.g. if a branch admin should manage only employees of his branch (see
 `Authorization::Reader` in the API docs for a full list of available operators):
 
 ```ruby
@@ -510,7 +510,7 @@ class EmployeeTest < ActiveSupport::TestCase
   end
 end
 ```
-    
+
 Or, with RSpec, it would work like this:
 
 ```ruby
@@ -540,7 +540,7 @@ See `Authorization::TestHelper` for more information.
 ## Providing the Plugin's Requirements
 The requirements are
 * Rails >= 4.2.5.2 and Ruby >= 2.1.x
-* An authentication mechanism 
+* An authentication mechanism
 * A user object returned by Controller#current_user
 * An array of role symbols returned by User#role_symbols
 * (For model security) Setting Authorization.current_user to the request's user
@@ -553,7 +553,7 @@ restful_authentication.
    cd ../.. && ruby script/generate authenticated user sessions
 * Move "include AuthenticatedSystem" to ApplicationController
 * Add +filter_access_to+ calls as described above.
-* If you'd like to use model security, add a before_action that sets the user 
+* If you'd like to use model security, add a before_action that sets the user
   globally to your ApplicationController. This is thread-safe.
    before_action :set_current_user
    protected
@@ -562,9 +562,9 @@ restful_authentication.
    end
 
 * Add roles field to the User model through a :+has_many+ association
-  (this is just one possible approach; you could just as easily use 
+  (this is just one possible approach; you could just as easily use
   :+has_many+ :+through+ or a serialized roles array):
-  * create a migration for table roles 
+  * create a migration for table roles
 
      class CreateRoles < ActiveRecord::Migration
        def self.up
@@ -584,7 +584,7 @@ restful_authentication.
        belongs_to :user
      end
 
-  * add +has_many+ :+roles+ to the User model and a roles method that returns the roles 
+  * add +has_many+ :+roles+ to the User model and a roles method that returns the roles
     as an Array of Symbols, e.g.
      class User < ActiveRecord::Base
        has_many :roles

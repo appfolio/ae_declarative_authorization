@@ -178,6 +178,7 @@ module Authorization
       def includes(*privileges)
         raise DSLError, "includes only in privilege block" if @current_priv.nil?
         privileges.each do |priv|
+          priv = priv.to_sym
           append_privilege priv
           @privilege_hierarchy[@current_priv] ||= []
           @privilege_hierarchy[@current_priv] << [priv, @current_context]
@@ -284,7 +285,7 @@ module Authorization
         raise DSLError, "has_permission_on either needs a block or :to option" if !block_given? and privs.empty?
 
         file, line = file_and_line_number_from_call_stack
-        rule = AuthorizationRule.new(@current_role, privs, context, options[:join_by],
+        rule = AuthorizationRule.new(@current_role, privs.map(&:to_sym), context, options[:join_by],
                    :source_file => file, :source_line => line)
         @auth_rules << rule
         if block_given?
