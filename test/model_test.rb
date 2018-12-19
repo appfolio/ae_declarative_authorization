@@ -1,5 +1,5 @@
 require 'test_helper'
-require File.join(File.dirname(__FILE__), %w{.. lib declarative_authorization in_model})
+require File.expand_path(File.join(File.dirname(__FILE__), %w{.. lib declarative_authorization in_model}))
 
 ActiveRecord::Base.send :include, Authorization::AuthorizationInModel
 #ActiveRecord::Base.logger = Logger.new(STDOUT)

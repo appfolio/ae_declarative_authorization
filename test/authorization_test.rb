@@ -387,11 +387,11 @@ class AuthorizationTest < Test::Unit::TestCase
       end
     }
     engine = Authorization::Engine.new(reader)
-    assert engine.permit?(:lower, :context => :permissions,
-      :user => MockUser.new(:test_role))
+    assert engine.permit?(:test, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
   end
 
-  def test_role_hierarchy_infinity
+  def test_role_hierarchy__recursive
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -400,14 +400,61 @@ class AuthorizationTest < Test::Unit::TestCase
           has_permission_on :permissions, :to => :test
         end
         role :lower_role do
-          includes :higher_role
+          has_permission_on :permissions, :to => :lower
+          includes :lowest_role
+        end
+        role :lowest_role do
+          has_permission_on :permissions, :to => :lowest
+        end
+      end
+    }
+    engine = Authorization::Engine.new(reader)
+    assert engine.permit?(:test, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lowest, context: :permissions, user: MockUser.new(:test_role))
+  end
+
+  def test_role_hierarchy__circular
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          includes :lower_role
+          has_permission_on :permissions, :to => :test
+        end
+        role :lower_role do
+          includes :test_role
           has_permission_on :permissions, :to => :lower
         end
       end
     }
     engine = Authorization::Engine.new(reader)
-    assert engine.permit?(:lower, :context => :permissions,
-      :user => MockUser.new(:test_role))
+    assert engine.permit?(:test, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
+  end
+
+  def test_role_hierarchy__recursive__circular
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          includes :lower_role
+          has_permission_on :permissions, :to => :test
+        end
+        role :lower_role do
+          includes :lowest_role
+          has_permission_on :permissions, :to => :lower
+        end
+        role :lowest_role do
+          includes :test_role
+          has_permission_on :permissions, :to => :lowest
+        end
+      end
+    }
+    engine = Authorization::Engine.new(reader)
+    assert engine.permit?(:test, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lowest, context: :permissions, user: MockUser.new(:test_role))
   end
 
   def test_privilege_hierarchy
@@ -425,8 +472,29 @@ class AuthorizationTest < Test::Unit::TestCase
       end
     }
     engine = Authorization::Engine.new(reader)
-    assert engine.permit?(:lower, :context => :permissions,
-      :user => MockUser.new(:test_role))
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
+  end
+
+  def test_privilege_hierarchy__recursive
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      privileges do
+        privilege :test, :permissions do
+          includes :lower
+        end
+        privilege :lower, :permissions do
+          includes :lowest
+        end
+      end
+      authorization do
+        role :test_role do
+          has_permission_on :permissions, :to => :test
+        end
+      end
+    }
+    engine = Authorization::Engine.new(reader)
+    assert engine.permit?(:lower, context: :permissions, user: MockUser.new(:test_role))
+    assert engine.permit?(:lowest, context: :permissions, user: MockUser.new(:test_role))
   end
 
   def test_privilege_hierarchy_without_context

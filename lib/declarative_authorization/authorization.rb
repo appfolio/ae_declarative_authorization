@@ -345,17 +345,16 @@ module Authorization
       [user, roles, privileges]
     end
 
-    def flatten_roles(roles)
+    def flatten_roles(roles, ignore: [])
       # TODO: caching?
       hierarchy = role_hierarchy
       flattened_roles = {}
       roles.each do |role|
         flattened_roles[role] = true
-        if (hierarchy_for_role = hierarchy[role])
-          hierarchy_for_role.each do |r|
-            flattened_roles[r] = true
-          end
-        end
+
+        children = (hierarchy[role] || []) - ignore
+        ignore += flattened_roles.keys
+        flattened_roles.merge!(flatten_roles(children, ignore: ignore)) if children.any?
       end
       flattened_roles
     end
