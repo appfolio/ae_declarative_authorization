@@ -353,8 +353,7 @@ module Authorization
         flattened_roles[role] = true
 
         children = (hierarchy[role] || []) - ignore
-        ignore += flattened_roles.keys
-        flattened_roles.merge!(flatten_roles(children, ignore: ignore)) if children.any?
+        flattened_roles.merge!(flatten_roles(children, ignore: ignore + [role])) if children.any?
       end
       flattened_roles
     end
