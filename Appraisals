@@ -28,6 +28,12 @@ when '2.3.3' then
     gem 'rails-controller-testing'
   end
 
+  appraise 'rails522' do
+    gem 'rails', '5.2.2'
+    gem 'grape', '1.1.0'
+    gem 'rails-controller-testing'
+  end
+
 else
   raise "Unsupported Ruby version #{RUBY_VERSION}"
 
