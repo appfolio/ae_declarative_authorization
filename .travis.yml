@@ -11,6 +11,7 @@ gemfile:
   - gemfiles/rails507.gemfile
   - gemfiles/rails516.gemfile
   - gemfiles/rails521.gemfile
+  - gemfiles/rails522.gemfile
 matrix:
   exclude:
   - rvm: 2.1.9
@@ -23,3 +24,5 @@ matrix:
     gemfile: gemfiles/rails4252.gemfile
   - rvm: 2.4.2
     gemfile: gemfiles/rails4271.gemfile
+  - rvm: 2.1.9
+    gemfile: gemfiles/rails522.gemfile
