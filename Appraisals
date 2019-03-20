@@ -18,19 +18,19 @@ when '2.3.3' then
 
   appraise 'rails516' do
     gem 'rails', '5.1.6'
-    gem 'grape', '1.1.0'
+    gem 'grape', '1.2.3'
     gem 'rails-controller-testing'
   end
 
   appraise 'rails521' do
     gem 'rails', '5.2.1'
-    gem 'grape', '1.1.0'
+    gem 'grape', '1.2.3'
     gem 'rails-controller-testing'
   end
 
   appraise 'rails522' do
     gem 'rails', '5.2.2'
-    gem 'grape', '1.1.0'
+    gem 'grape', '1.2.3'
     gem 'rails-controller-testing'
   end
 
