@@ -54,7 +54,11 @@ module Authorization
           protected
 
           def api_class
-            options[:for]
+            if options[:for].respond_to?(:base)
+              options[:for].base # Grape >= 1.2.0 controller
+            else
+              options[:for]      # Grape  < 1.2.0 controller
+            end
           end
         end
       end
