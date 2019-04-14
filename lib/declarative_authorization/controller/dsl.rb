@@ -172,9 +172,9 @@ module Authorization
 
       def filter_access_permissions # :nodoc:
         unless filter_access_permissions?
-          ancestors[1..-1].reverse.each do |mod|
-            mod.filter_access_permissions if mod.respond_to?(:filter_access_permissions, true)
-          end
+          ancestors
+            .select { |mod| mod != self && mod.respond_to?(:filter_access_permissions, true) }
+            .reverse_each { |mod| mod.filter_access_permissions }
         end
         class_variable_set(:@@declarative_authorization_permissions, {}) unless filter_access_permissions?
         class_variable_get(:@@declarative_authorization_permissions)[self.name] ||= []
