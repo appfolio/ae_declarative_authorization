@@ -275,7 +275,7 @@ module Authorization
 
     # Returns the role symbols and inherritted role symbols for the given user
     def roles_with_hierarchy_for(user)
-      flatten_roles(roles_for(user))
+      flattened_roles(user)
     end
 
     def self.development_reload?
@@ -340,9 +340,16 @@ module Authorization
       raise AuthorizationUsageError, "No user object given for user id (#{user.try(:id)}) or " +
         "set through Authorization.current_user" unless user
 
-      roles = options[:user_roles] || flatten_roles(roles_for(user))
+      roles = options[:user_roles] || flattened_roles(user)
       privileges = flatten_privileges privileges, options[:context]
       [user, roles, privileges]
+    end
+
+    def flattened_roles(user)
+      @flatten_roles ||= Hash.new do |h, key|
+        h[user] = flatten_roles(roles_for(user))
+      end
+      @flatten_roles[user]
     end
 
     def flatten_roles(roles, ignore: [])
