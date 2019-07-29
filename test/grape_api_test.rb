@@ -26,6 +26,12 @@ if defined?(Grape)
   class BasicAPITest < ApiTestCase
     tests SpecificMocks
 
+    def test_method_not_allowed
+      reader = Authorization::Reader::DSLReader.new
+      request!(MockUser.new(:test_role), "/specific_mocks/test_action", reader, method: :delete)
+      assert_equal 405, last_response.status
+    end
+
     def test_filter_access_to_receiving_an_explicit_array
       reader = Authorization::Reader::DSLReader.new
 

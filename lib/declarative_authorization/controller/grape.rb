@@ -37,6 +37,12 @@ module Authorization
           end
 
           def filter_access_filter # :nodoc:
+            begin
+              route
+            rescue
+              # Acceessing route raises an exception when the response is a 405 MethodNotAllowed
+              return
+            end
             unless allowed?("#{request.request_method} #{route.origin}")
               if respond_to?(:permission_denied, true)
                 # permission_denied needs to render or redirect
