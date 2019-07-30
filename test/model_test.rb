@@ -343,29 +343,53 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
   def test_with_is_nil
     reader = Authorization::Reader::DSLReader.new
-    reader.parse %{
+    reader.parse %(
       authorization do
         role :test_role do
           has_permission_on :test_models, :to => :read do
             if_attribute :content => nil
           end
         end
+      end
+    )
+    Authorization::Engine.instance(reader)
+
+    test_model_1 = TestModel.create!
+    _test_model_2 = TestModel.create!(content: 'Content')
+    models_user_can_read = TestModel.with_permissions_to(
+      :read,
+      context: :test_models,
+      user: MockUser.new(:test_role)
+    )
+
+    assert_equal 1, models_user_can_read.size
+    assert_equal test_model_1, models_user_can_read.first
+
+    TestModel.delete_all
+  end
+
+  def test_with_is_not_nil
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %(
+      authorization do
         role :test_role_not_nil do
           has_permission_on :test_models, :to => :read do
             if_attribute :content => is_not { nil }
           end
         end
       end
-    }
+    )
     Authorization::Engine.instance(reader)
 
-    test_model_1 = TestModel.create!
-    test_model_2 = TestModel.create! :content => "Content"
+    test_model = TestModel.create!(content: 'Content')
+    model_user_can_read = TestModel.with_permissions_to(
+      :read,
+      context: :test_models,
+      user: MockUser.new(:test_role_not_nil)
+    ).first
 
-    assert_equal test_model_1, TestModel.with_permissions_to(:read,
-      :context => :test_models, :user => MockUser.new(:test_role)).first
-    assert_equal test_model_2, TestModel.with_permissions_to(:read,
-      :context => :test_models, :user => MockUser.new(:test_role_not_nil)).first
+    assert_equal test_model, model_user_can_read
+
     TestModel.delete_all
   end
 
@@ -1023,7 +1047,7 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
   def test_with_anded_if_permitted_to
     reader = Authorization::Reader::DSLReader.new
-    reader.parse %{
+    reader.parse %(
       authorization do
         role :base_role do
           has_permission_on :test_attrs, :to => :read, :join_by => :and do
@@ -1044,7 +1068,7 @@ class NamedScopeModelTest < Test::Unit::TestCase
           end
         end
       end
-    }
+    )
     Authorization::Engine.instance(reader)
 
     test_model_1 = TestModel.create!(:content => "first test")
@@ -1422,7 +1446,7 @@ class ModelTest < Test::Unit::TestCase
 
   def test_model_security_write_not_allowed_no_privilege
     reader = Authorization::Reader::DSLReader.new
-    reader.parse %{
+    reader.parse %(
       authorization do
         role :test_role do
           has_permission_on :test_model_security_models do
@@ -1430,18 +1454,19 @@ class ModelTest < Test::Unit::TestCase
             if_attribute :attr => is { 1 }
           end
         end
-        role :test_role_restricted do
-        end
       end
-    }
+    )
     Authorization::Engine.instance(reader)
 
     Authorization.current_user = MockUser.new(:test_role)
     assert(object = TestModelSecurityModel.create)
 
-    Authorization.current_user = MockUser.new(:test_role_restricted)
+    assert_nothing_raised do
+      object.update_attributes(attr: 1)
+    end
+
     assert_raise Authorization::NotAuthorized do
-      object.update_attributes(:attr_2 => 2)
+      object.update_attributes(attr: 2)
     end
   end
 
@@ -1484,30 +1509,48 @@ class ModelTest < Test::Unit::TestCase
     end
   end
 
-  def test_model_security_with_and_without_find_restrictions
+  def test_model_security_without_find_restrictions
     reader = Authorization::Reader::DSLReader.new
-    reader.parse %{
+    reader.parse %(
       authorization do
         role :test_role_unrestricted do
           has_permission_on :test_model_security_models do
             to :read, :create, :update, :delete
           end
         end
+      end
+    )
+    Authorization::Engine.instance(reader)
+
+    Authorization.current_user = MockUser.new(:test_role_unrestricted)
+    object = TestModelSecurityModel.create(attr: 2)
+
+    assert_nothing_raised do
+      object.class.find(object.id)
+    end
+  end
+
+  def test_model_security_with_find_restrictions
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %(
+      authorization do
         role :test_role do
           has_permission_on :test_model_security_models do
-            to :read, :create, :update, :delete
+            to :create, :update, :delete
+          end
+          has_permission_on :test_model_security_models do
+            to :read
             if_attribute :attr => is { 1 }
           end
         end
       end
-    }
+    )
     Authorization::Engine.instance(reader)
 
-    Authorization.current_user = MockUser.new(:test_role_unrestricted)
-    object = TestModelSecurityModel.create :attr => 2
-    object_with_find = TestModelSecurityModelWithFind.create :attr => 2
-
     Authorization.current_user = MockUser.new(:test_role)
+    object = TestModelSecurityModel.create(attr: 2)
+    object_with_find = TestModelSecurityModelWithFind.create(attr: 2)
+
     assert_nothing_raised do
       object.class.find(object.id)
     end
@@ -1542,26 +1585,23 @@ class ModelTest < Test::Unit::TestCase
 
   def test_model_security_delete_unallowed
     reader = Authorization::Reader::DSLReader.new
-    reader.parse %{
+    reader.parse %(
       authorization do
-        role :test_role_unrestricted do
-          has_permission_on :test_model_security_models do
-            to :read, :create, :update, :delete
-          end
-        end
         role :test_role do
           has_permission_on :test_model_security_models do
-            to :read, :create, :update, :delete
+            to :read, :create, :update
+          end
+          has_permission_on :test_model_security_models do
+            to :delete
             if_attribute :attr => is { 1 }
           end
         end
       end
-    }
+    )
     Authorization::Engine.instance(reader)
 
-    Authorization.current_user = MockUser.new(:test_role_unrestricted)
-    object = TestModelSecurityModel.create :attr => 2
     Authorization.current_user = MockUser.new(:test_role)
+    object = TestModelSecurityModel.create(attr: 2)
     assert_raise Authorization::AttributeAuthorizationError do
       object.destroy
     end
