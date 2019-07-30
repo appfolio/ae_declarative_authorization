@@ -346,10 +346,8 @@ module Authorization
     end
 
     def flattened_roles(user)
-      @flatten_roles ||= Hash.new do |h, key|
-        h[user] = flatten_roles(roles_for(user))
-      end
-      @flatten_roles[user]
+      @flatten_roles ||= {}
+      @flatten_roles[user] ||= flatten_roles(roles_for(user))
     end
 
     def flatten_roles(roles, ignore: [])
