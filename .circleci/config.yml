@@ -20,9 +20,9 @@ jobs:
     steps:
       - bundle_install_and_test
 
-  test-ruby-262:
+  test-ruby-263:
     docker:
-      - image: circleci/ruby:2.6.2
+      - image: circleci/ruby:2.6.3
     steps:
       - bundle_install_and_test
 
@@ -33,5 +33,5 @@ workflows:
           context: appfolio_test_context
       - test-ruby-253:
           context: appfolio_test_context
-      - test-ruby-262:
+      - test-ruby-263:
           context: appfolio_test_context
