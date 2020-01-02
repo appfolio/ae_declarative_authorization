@@ -26,6 +26,15 @@ when '2.3.3', '2.5.3', '2.6.3' then
     gem 'rails-controller-testing'
   end
 
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5.0')
+    appraise "ruby-#{RUBY_VERSION}-rails6" do
+      gem 'rails', '~> 6.0'
+      gem 'grape', '1.2.3'
+      gem 'rails-controller-testing'
+      gem 'sqlite3', '~> 1.4'
+    end
+  end
+
 else
   raise "Unsupported Ruby version #{RUBY_VERSION}"
 
