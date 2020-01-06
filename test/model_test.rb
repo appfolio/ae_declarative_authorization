@@ -1410,7 +1410,7 @@ class ModelTest < Test::Unit::TestCase
     Authorization.stub :current_user, MockUser.new(:test_role) do
       assert(object = TestModelSecurityModel.create)
 
-      assert_nothing_raised { object.update_attributes(:attr_2 => 2) }
+      assert_nothing_raised { object.update(:attr_2 => 2) }
       object.reload
       assert_equal 2, object.attr_2
       object.destroy
@@ -1441,7 +1441,7 @@ class ModelTest < Test::Unit::TestCase
 
     Authorization.current_user = MockUser.new(:test_role_restricted)
     assert_raise Authorization::NotAuthorized do
-      object.update_attributes(:attr_2 => 2)
+      object.update(:attr_2 => 2)
     end
   end
 
@@ -1471,15 +1471,15 @@ class ModelTest < Test::Unit::TestCase
       end
       object = TestModelSecurityModel.create
       assert_raise Authorization::AttributeAuthorizationError do
-        object.update_attributes(:attr => 2)
+        object.update(:attr => 2)
       end
       object.reload
 
       assert_nothing_raised do
-        object.update_attributes(:attr_2 => 1)
+        object.update(:attr_2 => 1)
       end
       assert_raise Authorization::AttributeAuthorizationError do
-        object.update_attributes(:attr => 2)
+        object.update(:attr => 2)
       end
     end
   end
@@ -1625,7 +1625,7 @@ class ModelTest < Test::Unit::TestCase
     Authorization.stub :current_user, test_attr do
       assert(object = TestModelSecurityModel.create(:test_attrs => [test_attr]))
       assert_nothing_raised do
-        object.update_attributes(:attr_2 => 2)
+        object.update(:attr_2 => 2)
       end
       without_access_control do
         object.reload
@@ -1662,7 +1662,7 @@ class ModelTest < Test::Unit::TestCase
 
     with_user MockUser.new(:test_role, :branch => test_attr.branch) do
       assert_nothing_raised do
-        test_model.update_attributes(params[:model_data])
+        test_model.update(params[:model_data])
       end
     end
     without_access_control do

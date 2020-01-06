@@ -4,8 +4,9 @@ source "http://rubygems.org"
 
 gem "appraisal", "~> 2.1"
 gem "mocha", "~> 1.0", require: false
-gem "sqlite3", "~> 1.3.0"
-gem "rails", "5.1.6"
+gem "sprockets", "< 4"
+gem "sqlite3", "~> 1.4"
+gem "rails", "~> 6.0"
 gem "grape", "1.2.3"
 gem "rails-controller-testing"
 
