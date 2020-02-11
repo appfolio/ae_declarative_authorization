@@ -1,40 +1,26 @@
+RAILS_VERSIONS = ['5.2.2.1', '6.0.2.1']
+GRAPE_VERSIONS = ['1.1.0', '1.2.3', '1.3.0']
+
 case RUBY_VERSION
 
-when '2.3.3', '2.5.3', '2.6.3' then
+when '2.5.3', '2.6.3' then
+  RAILS_VERSIONS.product(GRAPE_VERSIONS).each do |rails_version, grape_version|
+    appraise "ruby-#{RUBY_VERSION}-rails#{rails_version}-grape#{grape_version}" do
+      gem 'rails', rails_version
+      gem 'grape', grape_version
 
-  appraise "ruby-#{RUBY_VERSION}-rails507" do
-    gem 'rails', '5.0.7'
-    gem 'grape', '1.1.0'
-    gem 'rails-controller-testing'
-  end
+      if Gem::Version.new(grape_version) < Gem::Version.new('1.3.0')
+        # https://github.com/ruby-grape/grape/pull/1956
+        gem "rack", "< 2.1.0"
+      end
 
-  appraise "ruby-#{RUBY_VERSION}-rails516" do
-    gem 'rails', '5.1.6'
-    gem 'grape', '1.2.3'
-    gem 'rails-controller-testing'
-  end
-
-  appraise "ruby-#{RUBY_VERSION}-rails521" do
-    gem 'rails', '5.2.1'
-    gem 'grape', '1.2.3'
-    gem 'rails-controller-testing'
-  end
-
-  appraise "ruby-#{RUBY_VERSION}-rails522" do
-    gem 'rails', '5.2.2'
-    gem 'grape', '1.2.3'
-    gem 'rails-controller-testing'
-  end
-
-  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5.0')
-    appraise "ruby-#{RUBY_VERSION}-rails6" do
-      gem 'rails', '~> 6.0'
-      gem 'grape', '1.2.3'
-      gem 'rails-controller-testing'
-      gem 'sqlite3', '~> 1.4'
+      if Gem::Version.new(rails_version) >= Gem::Version.new('6')
+        gem 'sqlite3', '~> 1.4'
+      else
+        gem 'sqlite3', '~> 1.3.0'
+      end
     end
   end
-
 else
   raise "Unsupported Ruby version #{RUBY_VERSION}"
 
