@@ -57,13 +57,18 @@ module Authorization
             ::Rails.logger
           end
 
-          protected
-
           def api_class
             if options[:for].respond_to?(:base)
-              options[:for].base # Grape >= 1.2.0 controller
+              # Grape >= 1.2.0 endpoint
+              # Authorization::Controller::Grape can be included into either Grape::API
+              # or Grape::API::Instance, so we need to check both.
+              [
+                options[:for],
+                options[:for].base
+              ].detect { |api| api.respond_to?(:decl_auth_context) }
             else
-              options[:for]      # Grape  < 1.2.0 controller
+              # Grape < 1.2.0 endpoint
+              options[:for]
             end
           end
         end

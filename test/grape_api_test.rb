@@ -174,7 +174,7 @@ if defined?(Grape)
   end
 
   ##################
-  class AllMocks < MocksAPI
+  class AllMocks < MocksAPIInstance
     filter_access_to :all
     filter_access_to 'GET /all_mocks/view', :require => :test, :context => :permissions
     define_action_methods :show, :view
