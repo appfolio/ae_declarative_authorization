@@ -41,51 +41,68 @@ class ApiTestCase < ActiveSupport::TestCase
   end
 end
 
-class MocksAPI < Grape::API
-  include Authorization::Controller::Grape
+module MockAPI
+  extend ActiveSupport::Concern
 
-  helpers do
-    attr_accessor :authorized
+  included do
+    include Authorization::Controller::Grape
 
-    def authorization_engine
+    helpers do
+      attr_accessor :authorized
+
+      def authorization_engine
+      end
+
+      def current_user
+      end
+
+      def authorized?
+        !!@authorized
+      end
     end
 
-    def current_user
-    end
 
-    def authorized?
-      !!@authorized
-    end
-  end
-
-
-  def self.define_action_methods(*methods)
-    resource_name = name.to_param.underscore.gsub(/_api$/, '')
-    resources resource_name do
-      methods.each do |method|
-        get method do
-          @authorized = true
-          'nothing'
+    def self.define_action_methods(*methods)
+      resource_name = name.to_param.underscore.gsub(/_api$/, '')
+      resources resource_name do
+        methods.each do |method|
+          get method do
+            @authorized = true
+            'nothing'
+          end
         end
       end
     end
-  end
 
-  def self.define_resource_actions
-    define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
-  end
+    def self.define_resource_actions
+      define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
+    end
 
-  def logger(*args)
-    Class.new do
-      def warn(*args)
-        #p args
-      end
-      alias_method :info, :warn
-      alias_method :debug, :warn
-      def warn?; end
-      alias_method :info?, :warn?
-      alias_method :debug?, :warn?
-    end.new
+    def logger(*args)
+      Class.new do
+        def warn(*args)
+          #p args
+        end
+        alias_method :info, :warn
+        alias_method :debug, :warn
+        def warn?; end
+        alias_method :info?, :warn?
+        alias_method :debug?, :warn?
+      end.new
+    end
+  end
+end
+
+class MocksAPI < Grape::API
+  include MockAPI
+end
+
+if Gem::Version.new(Grape::VERSION) >= Gem::Version.new('1.2.0')
+  class MocksAPIInstance < Grape::API::Instance
+    include MockAPI
+  end
+else
+  class MocksAPIInstance < MocksAPI
   end
 end
 

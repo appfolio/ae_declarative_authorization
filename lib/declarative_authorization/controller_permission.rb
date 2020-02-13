@@ -68,11 +68,7 @@ module Authorization
 
     def controller_class(contr)
       if defined?(Grape) && contr.class < Grape::Endpoint
-        if contr.options[:for].respond_to?(:base)
-          contr.options[:for].base # Grape >= 1.2.0 controller
-        else
-          contr.options[:for]      # Grape  < 1.2.0 controller
-        end
+        contr.api_class
       else
         contr.class         # Rails controller
       end
