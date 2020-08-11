@@ -155,8 +155,14 @@ module DeclarativeAuthorization
         alias :access_tests_not_required :this_is_an_abstract_controller_so_it_needs_no_access_tests
 
         def all_public_actions
-          actions = controller_class.public_instance_methods(false)
-          actions += controller_class.superclass.public_instance_methods(false)
+          actions = []
+          if defined?(Grape) && [Grape::API, Grape::API::Instance].any? { |base| controller_class < base }
+            actions += controller_class.routes.map { |api| "#{api.request_method} #{api.origin}" }
+          else
+            actions += controller_class.public_instance_methods(false)
+            actions += controller_class.superclass.public_instance_methods(false)
+          end
+
           actions.reject! do |method|
             method =~ /^_/ ||
               method =~ /^rescue_action/ ||
