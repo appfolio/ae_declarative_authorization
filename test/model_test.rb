@@ -1366,6 +1366,18 @@ class NamedScopeModelTest < Test::Unit::TestCase
 end
 
 class ModelTest < Test::Unit::TestCase
+  def test_ensure_permit_callback_is_not_called
+    Rails.application.config.ae_declarative_authorization_permit_callback = "shouldn't matter"
+    reader = Authorization::Reader::DSLReader.new
+    instance = Authorization::Engine.instance(reader)
+    test_model = TestModel.create!
+    test_attr = test_model.create_test_attr_has_one
+    user = MockUser.new(:test_role, :test_attr => test_attr)
+    instance.permit?(:update, :user => user, :object => test_model.test_attr_has_one)
+  ensure
+    Rails.application.config.ae_declarative_authorization_permit_callback = nil
+  end
+
   def test_permit_with_has_one_raises_no_name_error
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
