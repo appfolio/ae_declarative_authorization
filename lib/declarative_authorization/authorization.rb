@@ -175,6 +175,9 @@ module Authorization
 
       user, roles, privileges = user_roles_privleges_from_options(privilege, options)
 
+      callback = Rails.application.config.try(:ae_declarative_authorization_permit_callback)
+      callback.call(controller: options[:controller], privilege: privilege) if callback && options.include?(:controller)
+
       return true if roles.is_a?(Hash) && !(roles.keys & omnipotent_roles).empty?
 
       # find a authorization rule that matches for at least one of the roles and

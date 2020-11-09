@@ -25,6 +25,24 @@ end
 class BasicControllerTest < ActionController::TestCase
   tests SpecificMocksController
 
+  def test_permit_callback
+    callback_called = false
+
+    Rails.application.config.ae_declarative_authorization_permit_callback = Proc.new do |controller:, privilege:|
+      callback_called = true
+      assert_equal 'SpecificMocksController', controller.class.name
+      assert_equal 'test_action', controller.action_name
+      assert_equal :test, privilege
+    end
+
+    reader = Authorization::Reader::DSLReader.new
+    request!(MockUser.new(:test_role), "test_action", reader)
+
+    assert callback_called
+  ensure
+    Rails.application.config.ae_declarative_authorization_permit_callback = nil
+  end
+
   def test_filter_access_to_receiving_an_explicit_array
     reader = Authorization::Reader::DSLReader.new
 

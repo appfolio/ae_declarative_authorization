@@ -29,7 +29,8 @@ module Authorization
                                          :user => contr.send(:current_user),
                                          :object => object,
                                          :skip_attribute_test => !@attribute_check,
-                                         :context => @context || controller_class(contr).decl_auth_context)
+                                         :context => @context || controller_class(contr).decl_auth_context,
+                                         :controller => contr)
     end
 
     def remove_actions(actions)
