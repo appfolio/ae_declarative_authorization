@@ -200,7 +200,7 @@ module Authorization
           collections = actions_from_option(options[:collection]).merge(
               actions_from_option(options[:additional_collection]))
 
-          no_attribute_check_actions = options[:strong_parameters] ? actions_from_option(options[:collection]).merge(actions_from_option([:create])) : collections
+          no_attribute_check_actions = options[:strong_parameters] ? collections.merge(actions_from_option([:create])) : collections
 
           options[:no_attribute_check] ||= no_attribute_check_actions.keys unless options[:nested_in]
 
