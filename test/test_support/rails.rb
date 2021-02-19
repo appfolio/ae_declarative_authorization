@@ -6,11 +6,6 @@ end
 
 puts "Testing against rails #{Rails::VERSION::STRING}"
 
-if Rails.version >= '5.0'
-  require 'rails-controller-testing'
-  Rails::Controller::Testing.install
-end
-
 class TestApp
   class Application < ::Rails::Application
     config.eager_load                 = false
