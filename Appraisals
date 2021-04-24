@@ -3,7 +3,7 @@ GRAPE_VERSIONS = ['1.1.0', '1.2.3', '1.3.0']
 
 case RUBY_VERSION
 
-when '2.5.3', '2.6.3' then
+when '2.5.3', '2.6.3', '2.7.2' then
   RAILS_VERSIONS.product(GRAPE_VERSIONS).each do |rails_version, grape_version|
     appraise "ruby-#{RUBY_VERSION}-rails#{rails_version}-grape#{grape_version}" do
       gem 'rails', rails_version
