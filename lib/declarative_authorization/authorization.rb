@@ -2,6 +2,7 @@
 require File.dirname(__FILE__) + '/reader.rb'
 require "set"
 require "forwardable"
+require 'rails'
 
 module Authorization
   # An exception raised if anything goes wrong in the Authorization realm

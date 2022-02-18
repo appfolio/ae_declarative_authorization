@@ -71,7 +71,7 @@ Finally, the installer also copies default authorization rules, as below.
 
 ### Generate Authorization Rules
 
-To copy a default set of authorization rules which includes CRUD priveleges, run:
+To copy a default set of authorization rules which includes CRUD privileges, run:
 
     $ rails g authorization:rules
 

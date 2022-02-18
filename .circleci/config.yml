@@ -1,29 +1,17 @@
 version: 2.1
-commands:
-  bundle_install_and_test:
-    steps:
-      - checkout
-      - run: bundle install
-      - run: bundle exec appraisal install
-      - run: bundle exec appraisal rake test
 
-jobs:
-  test-ruby-253:
-    docker:
-      - image: circleci/ruby:2.5.3
-    steps:
-      - bundle_install_and_test
-
-  test-ruby-263:
-    docker:
-      - image: circleci/ruby:2.6.3
-    steps:
-      - bundle_install_and_test
+orbs:
+  gem-tool: appfolio/gem-tool@volatile
 
 workflows:
   rc:
     jobs:
-      - test-ruby-253:
-          context: appfolio_test_context
-      - test-ruby-263:
-          context: appfolio_test_context
+      - gem-tool/rake_test:
+          name: test_ruby-<< matrix.ruby_version >>
+          executor_tag: ruby
+          matrix:
+            parameters:
+              ruby_version:
+                - '3.1.0'
+                - '2.7.5'
+                - '2.6.9'
