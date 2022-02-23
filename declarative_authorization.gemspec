@@ -1,24 +1,23 @@
-# -*- encoding: utf-8 -*-
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'declarative_authorization/version'
+# frozen_string_literal: true
 
-Gem::Specification.new do |s|
-  s.name        = 'ae_declarative_authorization'
-  s.version     = DeclarativeAuthorization::VERSION
-  s.platform    = Gem::Platform::RUBY
-  s.authors     = ['AppFolio', 'Steffen Bartsch']
-  s.email       = 'dev@appfolio.com'
-  s.description = 'ae_declarative_authorization is a Rails gem for maintainable authorization based on readable authorization rules.'
-  s.summary     = s.description
-  s.homepage    = 'http://github.com/appfolio/ae_declarative_authorization'
-  s.licenses    = ['MIT']
+require_relative 'lib/declarative_authorization/version'
 
-  s.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|gemfiles)/}) }
-  s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
-  s.require_paths = ['lib']
+Gem::Specification.new do |spec|
+  spec.name                  = 'ae_declarative_authorization'
+  spec.version               = DeclarativeAuthorization::VERSION
+  spec.platform              = Gem::Platform::RUBY
+  spec.author                = 'AppFolio'
+  spec.email                 = 'opensource@appfolio.com'
+  spec.description           = 'Rails gem for maintainable authorization based on readable authorization rules.'
+  spec.summary               = spec.description
+  spec.homepage              = 'https://github.com/appfolio/ae_declarative_authorization'
+  spec.license               = 'MIT'
+  spec.files                 = Dir['**/*'].select { |f| f[%r{^(lib/|LICENSE.txt|.*gemspec)}] }
+  spec.require_paths         = ['lib']
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.6.3')
 
-  s.add_dependency(%q<blockenspiel>, ['~> 0.5.0'])
-  s.add_dependency(%q<rails>, ['>= 4.2.5.2', '< 7'])
+  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
+
+  spec.add_dependency('blockenspiel', ['>= 0.5', '< 1'])
+  spec.add_dependency('rails', ['>= 4.2.5.2', '< 7.1'])
 end
