@@ -216,7 +216,7 @@ class ShallowNestedResourcesControllerTest < ActionController::TestCase
     assert !@controller.authorized?
     request!(allowed_user, :index, reader, :parent_mock_id => "1",
         :clear => [:@shallow_nested_resource, :@parent_mock])
-    assert assigns(:parent_mock)
+    assert @controller.instance_variable_get(:@parent_mock)
     assert @controller.authorized?
   end
 
@@ -237,8 +237,8 @@ class ShallowNestedResourcesControllerTest < ActionController::TestCase
     assert !@controller.authorized?
     request!(allowed_user, :show, reader, :id => "1",
         :clear => [:@shallow_nested_resource, :@parent_mock])
-    assert !assigns(:parent_mock)
-    assert assigns(:shallow_nested_resource)
+    assert_nil @controller.instance_variable_get(:@parent_mock)
+    assert @controller.instance_variable_get(:@shallow_nested_resource)
     assert @controller.authorized?
   end
 
@@ -261,8 +261,8 @@ class ShallowNestedResourcesControllerTest < ActionController::TestCase
     request!(allowed_user, :new, reader, :parent_mock_id => "1",
         :shallow_nested_resource => {:id => "1"},
         :clear => [:@shallow_nested_resource, :@parent_mock])
-    assert assigns(:parent_mock)
-    assert assigns(:shallow_nested_resource)
+    assert @controller.instance_variable_get(:@parent_mock)
+    assert @controller.instance_variable_get(:@shallow_nested_resource)
     assert @controller.authorized?
   end
 
@@ -283,8 +283,8 @@ class ShallowNestedResourcesControllerTest < ActionController::TestCase
     assert !@controller.authorized?
     request!(allowed_user, :additional_member_action, reader, :id => "1",
         :clear => [:@shallow_nested_resource, :@parent_mock])
-    assert !assigns(:parent_mock)
-    assert assigns(:shallow_nested_resource)
+    assert !@controller.instance_variable_get(:@parent_mock)
+    assert @controller.instance_variable_get(:@shallow_nested_resource)
     assert @controller.authorized?
   end
 end
