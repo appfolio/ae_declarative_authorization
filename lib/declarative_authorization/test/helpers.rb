@@ -134,7 +134,7 @@ module DeclarativeAuthorization
 
         def access_tests(&block)
           @access_tests_defined = true
-          file_output ||= [ 'test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
+          file_output ||= [ Dir.tmpdir + '/test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
           unless File.exist?(file_output)
             FileUtils.mkdir_p(File.dirname(file_output))
           end
