@@ -6,10 +6,14 @@
 
 **Closed issues:**
 
+- Is this fork dead? [\#30](https://github.com/appfolio/ae_declarative_authorization/issues/30)
+- undefined method `using\_access\_control'  [\#29](https://github.com/appfolio/ae_declarative_authorization/issues/29)
 - Default to :post method for certain crud actions [\#8](https://github.com/appfolio/ae_declarative_authorization/issues/8)
 
 **Merged pull requests:**
 
+- Use Dir.tmpdir for access\_checking tests [\#32](https://github.com/appfolio/ae_declarative_authorization/pull/32) ([pauldanielm](https://github.com/pauldanielm))
+- Updates for Ruby `2.7.7`, `3.1.3`, `3.2.1` [\#31](https://github.com/appfolio/ae_declarative_authorization/pull/31) ([Maimer](https://github.com/Maimer))
 - Appraise rubies 2.6.9, 2.7.5, 3.1.0, and Rails 7 [\#27](https://github.com/appfolio/ae_declarative_authorization/pull/27) ([Maimer](https://github.com/Maimer))
 - Remove rails-controller-testing gem [\#26](https://github.com/appfolio/ae_declarative_authorization/pull/26) ([ztmeyer](https://github.com/ztmeyer))
 
