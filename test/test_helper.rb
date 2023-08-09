@@ -9,6 +9,8 @@ rescue Bundler::BundlerError => e
 end
 
 require 'minitest/autorun'
+require 'minitest/reporters'
+require 'mocha/minitest'
 
 ENV['RAILS_ENV'] = 'test'
 
@@ -20,6 +22,14 @@ DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
+
+Mocha.configure do |config|
+  config.stubbing_non_existent_method = :prevent
+  config.strict_keyword_argument_matching = true
+end
+
+Minitest::Test.make_my_diffs_pretty!
+Minitest::Reporters.use! unless ENV['RM_INFO']
 
 class MockDataObject
   def initialize(attrs = {})
