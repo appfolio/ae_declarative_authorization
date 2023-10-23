@@ -104,11 +104,7 @@ module ActiveSupport
 
       method = params.delete(:method) || :get
 
-      if Rails.version >= '5.0'
-        send method, action, params: params
-      else
-        send method, action, params
-      end
+      send method, action, params: params
     end
 
     def setup
