@@ -62,13 +62,13 @@ class NWayJoinItem < ActiveRecord::Base
 end
 
 class TestAttr < ActiveRecord::Base
-  belongs_to :test_model
-  belongs_to :test_another_model, :class_name => "TestModel", :foreign_key => :test_another_model_id
-  belongs_to :test_a_third_model, :class_name => "TestModel", :foreign_key => :test_a_third_model_id
-  belongs_to :n_way_join_item
-  belongs_to :test_attr
-  belongs_to :branch
-  belongs_to :company
+  belongs_to :test_model, optional: true
+  belongs_to :test_another_model, :class_name => "TestModel", :foreign_key => :test_another_model_id, optional: true
+  belongs_to :test_a_third_model, :class_name => "TestModel", :foreign_key => :test_a_third_model_id, optional: true
+  belongs_to :n_way_join_item, optional: true
+  belongs_to :test_attr, optional: true
+  belongs_to :branch, optional: true
+  belongs_to :company, optional: true
   has_many :test_attr_throughs
   has_many :test_model_security_model_with_finds
   attr_reader :role_symbols
@@ -80,7 +80,7 @@ class TestAttr < ActiveRecord::Base
 end
 
 class TestAttrThrough < ActiveRecord::Base
-  belongs_to :test_attr
+  belongs_to :test_attr, optional: true
 end
 
 class TestModelSecurityModel < ActiveRecord::Base
@@ -91,20 +91,20 @@ class TestModelSecurityModelWithFind < ActiveRecord::Base
   self.table_name = 'test_model_security_models'
 
   has_many :test_attrs
-  belongs_to :test_attr
+  belongs_to :test_attr, optional: true
   using_access_control :include_read => true,
                        :context      => :test_model_security_models
 end
 
 class Branch < ActiveRecord::Base
   has_many :test_attrs
-  belongs_to :company
-  belongs_to :test_model
+  belongs_to :company, optional: true
+  belongs_to :test_model, optional: true
 end
 class Company < ActiveRecord::Base
   has_many :test_attrs
   has_many :branches
-  belongs_to :country
+  belongs_to :country, optional: true
 end
 class SmallCompany < Company
   def self.decl_auth_context
