@@ -8,6 +8,7 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 
+require 'debug'
 require 'minitest/autorun'
 require 'minitest/reporters'
 require 'mocha/minitest'
