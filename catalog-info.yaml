@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  title: ae_declarative_authorization
+  description: A plugin that offers an authorization mechanism inspired by
+    Role-based access control (RBAC)
+  tags:
+    - oss
+  annotations:
+    appfolio.com/package-location: url:https://rubygems.org/gems/ae_declarative_authorization
+    appfolio.com/package-type: gem
+  name: ae-declarative-authorization
+spec:
+  type: library
+  lifecycle: maintenance
+  owner: bourne-identity
