@@ -9,6 +9,7 @@ rescue Bundler::BundlerError => e
 end
 
 require 'debug'
+require 'logger'
 require 'minitest/autorun'
 require 'minitest/reporters'
 require 'mocha/minitest'

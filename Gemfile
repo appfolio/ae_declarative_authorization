@@ -11,6 +11,7 @@ source 'https://rubygems.org' do
   gem 'minitest-reporters', '>= 1.6', '< 2'
   gem 'mocha', '>= 2.1', '< 3'
   gem 'rake', '>= 13', '< 14'
+  gem 'rubocop', '~> 1.70', groups: %i[development test]
   gem 'simplecov', '>= 0.22', '< 1', group: :test, require: false
   gem 'sprockets', '>= 3.4', '< 4'
   gem 'sqlite3', '>= 1.4', '< 2'
