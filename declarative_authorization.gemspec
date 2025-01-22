@@ -15,9 +15,9 @@ Gem::Specification.new do |spec|
   spec.files         = Dir['**/*'].select { |f| f[%r{^(lib/|LICENSE.txt|.*gemspec)}] }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = Gem::Requirement.new('< 3.4')
+  spec.required_ruby_version = Gem::Requirement.new(['>= 3.2', '< 3.5'])
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.add_dependency('blockenspiel', ['>= 0.5', '< 1'])
-  spec.add_dependency('rails', ['>= 6.1', '< 7.3'])
+  spec.add_dependency('rails', ['>= 7', '< 8.1'])
 end
