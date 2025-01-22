@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Appraise Ruby 3.4 and Rails 8.0 [\#40](https://github.com/appfolio/ae_declarative_authorization/pull/40) ([Maimer](https://github.com/Maimer))
 - Add a rubocop for filter\_access\_to placement [\#38](https://github.com/appfolio/ae_declarative_authorization/pull/38) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
 - Appraise Rails 7.2 [\#37](https://github.com/appfolio/ae_declarative_authorization/pull/37) ([Maimer](https://github.com/Maimer))
 - Add Backstage catalog metadata file\(s\) [\#36](https://github.com/appfolio/ae_declarative_authorization/pull/36) ([modethirteen](https://github.com/modethirteen))
