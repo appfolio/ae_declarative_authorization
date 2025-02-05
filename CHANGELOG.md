@@ -2,14 +2,19 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.3.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.6.1...HEAD)
 
 **Merged pull requests:**
 
+- Relax required ruby version range [\#41](https://github.com/appfolio/ae_declarative_authorization/pull/41) ([Maimer](https://github.com/Maimer))
 - Appraise Ruby 3.4 and Rails 8.0 [\#40](https://github.com/appfolio/ae_declarative_authorization/pull/40) ([Maimer](https://github.com/Maimer))
 - Add a rubocop for filter\_access\_to placement [\#38](https://github.com/appfolio/ae_declarative_authorization/pull/38) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
 - Appraise Rails 7.2 [\#37](https://github.com/appfolio/ae_declarative_authorization/pull/37) ([Maimer](https://github.com/Maimer))
 - Add Backstage catalog metadata file\(s\) [\#36](https://github.com/appfolio/ae_declarative_authorization/pull/36) ([modethirteen](https://github.com/modethirteen))
+
+## [v1.6.1](https://github.com/appfolio/ae_declarative_authorization/tree/v1.6.1) (2025-02-05)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.3.0...v1.6.1)
 
 ## [v1.3.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.3.0) (2024-02-29)
 
