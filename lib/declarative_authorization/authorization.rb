@@ -186,10 +186,132 @@ module Authorization
       attr_validator = AttributeValidator.new(self, user, options[:object], privilege, options[:context])
       rules = matching_auth_rules(roles, privileges, options[:context])
 
-      # Test each rule in turn to see whether any one of them is satisfied.
+      #  _____       _          ____  ____
+      # /  ___|     (_)        |  _ \|  _ \
+      # \ `--. _ __  _  ___ ___| | | | |_) |
+      #  `--. \ '_ \| |/ __/ _ \ | | |  _ <
+      # /\__/ / |_) | | (_|  __/ |_| | |_) |
+      # \____/| .__/|_|\___\___|____/|____/
+      #       | |                                                   
+      #       |_|
+      use_spicedb_auth = false
+
       rules.each do |rule|
-        return true if rule.validate?(attr_validator, options[:skip_attribute_test])
+        unless rule.role.to_s.start_with?("leases__", "lease_renewals__")
+          #  Existing behavior for non-lease-related rules
+          return true if rule.validate?(attr_validator, options[:skip_attribute_test])
+          next
+        end
+
+        use_spicedb_auth = true
+
+        auth_service_class = Rails.application.config.try(:spicedb_authorization_service)
+        @auth_service = auth_service_class.new
+
+        vhost_id = Core::Company.guid if defined?(Core::Company)
+        raise StandardError, "Vhost ID not found" if vhost_id.nil?
+
+        puts "\n==== Processing new rule ===="
+        puts "Rule: #{rule.inspect}"
+        puts "Role: #{rule.role}"
+
+        permission_to_check = rule.role.to_s.gsub("__", "_") + "_permission"
+        puts "Permission to check: #{permission_to_check}"
+
+        if rule.attributes.empty?
+          puts "Rule has no attributes, checking spicedb directly"
+          
+          authorized = @auth_service.check_permission(
+            resource: { type: "vhost", id: vhost_id },
+            permission: permission_to_check
+          )
+          puts "Authorized? #{authorized}"
+
+          return true if authorized
+        else
+          puts "Rule has #{rule.attributes.count} attributes, examining them:"
+          
+          rule.attributes.each_with_index do |attribute, index|
+            puts "\n  -- Attribute ##{index + 1}: #{attribute.inspect}"
+
+            if attribute.instance_variable_defined?('@conditions_hash')
+              conditions = attribute.instance_variable_get('@conditions_hash')
+              puts "  Conditions hash: #{conditions.inspect}"
+            else
+              puts "  !! No conditions_hash instance variable found, skipping"
+              next
+            end
+
+            next unless conditions.is_a?(Hash)
+
+            puts "  Checking conditions against current values:"
+            condition_matched = false
+
+            if conditions.key?(:granular_permissions)
+              rule_requires = conditions[:granular_permissions][1]
+              actual_value = options[:object]&.granular_permissions if options[:object].respond_to?(:granular_permissions)
+
+              puts "  Granular permissions - Rule requires: #{rule_requires}, Actual: #{actual_value}"
+              if rule_requires == actual_value
+                condition_matched = true
+                puts "  ✓ Granular permissions condition matched!"
+              else
+                puts "  ✗ Granular permissions condition did not match"
+              end
+            else
+              puts "  (No granular_permissions condition to check)"
+            end
+            
+            if conditions.key?(:is_renewal)
+              rule_requires = conditions[:is_renewal][1]
+              # If options[:object] has is_renewal, we'll use that value instead of obtaining it from SpiceDB.
+              # This allows for Blue Moon leases and others to be checked without having to make a SpiceDB call for the value of is_renewal.
+              if options[:object].respond_to?(:is_renewal)
+                actual_value = options[:object].is_renewal
+              else
+                # Check if the lease document is a renewal. Ideally we implement a method in the auth service that is better
+                # suited for this kind of check, but for the POC we'll just use lookup_subjects since it does what we need.
+                puts "  Checking SpiceDB for `renewal` relation on lease document uuid: #{options[:object]&.lease_document_uuid.to_s}"
+                response = @auth_service.lookup_subjects(
+                  resource_type: "lease_document",
+                  resource_id: options[:object]&.lease_document_uuid.to_s,
+                  permission: "renewal",
+                  subject_type: "lease_document",
+                )
+                actual_value = response[:subject_ids].any?
+              end
+
+              puts "  Is renewal - Rule requires: #{rule_requires}, Actual: #{actual_value}"
+              if rule_requires == actual_value
+                condition_matched = true
+                puts "  ✓ Is_renewal condition matched!"
+              else
+                puts "  ✗ Is_renewal condition did not match"
+              end
+            else
+              puts "  (No is_renewal condition to check)"
+            end
+            
+            if condition_matched
+              # For now, we will assume each rule's conditions are OR'd together. This is not the case
+              # for all rules, but it's the most common case and a good starting point.
+              puts "  At least one matching condition found, checking spicedb"
+              
+              authorized = @auth_service.check_permission(
+                resource: { type: "vhost", id: vhost_id },
+                permission: permission_to_check
+              )
+              puts "  Authorized? #{authorized}"
+
+              return true if authorized
+            else
+              puts "  No matching conditions, skipping spicedb check for this attribute"
+            end
+          end
+        end
       end
+
+      source_prefix = use_spicedb_auth ? "SpiceDB authorization failed. " : ""
 
       if options[:bang]
         if rules.empty?
@@ -197,12 +319,20 @@ module Authorization
             "(roles #{roles.inspect}, privileges #{privileges.inspect}, " +
             "context #{options[:context].inspect})."
         else
-          raise AttributeAuthorizationError, "#{privilege} not allowed for User with id #{user.try(:id)} on #{(options[:object] || options[:context]).inspect}."
+          raise AttributeAuthorizationError, "#{source_prefix}#{privilege} not allowed for User with id #{user.try(:id)} " +
+                                            "on #{(options[:object] || options[:context]).inspect}."
         end
       else
         false
       end
-    end
+    end   
+    #  _____   _   _   _____ 
+    # |  ___| | \ | | |  _  |
+    # | |__   |  \| | | | | |
+    # |  __|  | . ` | | | | |
+    # | |___  | |\  | \ \_/ /
+    # \____/  \_| \_/  \___/
+
 
     # Calls permit! but doesn't raise authorization errors. If no exception is
     # raised, permit? returns true and yields  to the optional block.
