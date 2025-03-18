@@ -232,8 +232,7 @@ module Authorization
         else
           puts "Rule has #{rule.attributes.count} attributes, examining them:"
     
-          all_attributes_matched = true
-          any_attribute_matched = false
+          matching_attributes_count = 0
           
           rule.attributes.each_with_index do |attribute, index|
             puts "\n  -- Attribute ##{index + 1}: #{attribute.inspect}"
@@ -248,8 +247,9 @@ module Authorization
 
             next unless conditions.is_a?(Hash)
 
-            puts "  Checking conditions against current values:"
-            current_attribute_matched = true
+            puts "  Checking #{conditions.count} conditions against current values:"
+            matching_conditions_count = 0
+            any_condition_failed = false
 
             if conditions.key?(:granular_permissions)
               rule_requires = conditions[:granular_permissions][1]
@@ -258,13 +258,14 @@ module Authorization
               puts "  Granular permissions - Rule requires: #{rule_requires}, Actual: #{actual_value}"
               if rule_requires == actual_value
                 puts "  ✓ Granular permissions condition matched!"
+                matching_conditions_count += 1
               else
                 puts "  ✗ Granular permissions condition did not match"
-                current_attribute_matched = false
+                any_condition_failed = true
               end
             end
             
-            if conditions.key?(:is_renewal) && current_attribute_matched
+            if conditions.key?(:is_renewal) && !any_condition_failed
               rule_requires = conditions[:is_renewal][1]
               # If options[:object] has is_renewal, we'll use that value instead of obtaining it from SpiceDB.
               # This allows for Blue Moon leases and others to be checked without having to make a SpiceDB call for the value of is_renewal.
@@ -286,13 +287,14 @@ module Authorization
               puts "  Is renewal - Rule requires: #{rule_requires}, Actual: #{actual_value}"
               if rule_requires == actual_value
                 puts "  ✓ Is_renewal condition matched!"
+                matching_conditions_count += 1
               else
                 puts "  ✗ Is_renewal condition did not match"
-                current_attribute_matched = false
+                any_condition_failed = true
               end
             end
     
-            if conditions.key?(:id) && current_attribute_matched
+            if conditions.key?(:id) && !any_condition_failed
               condition_type = conditions[:id][0]
               condition_proc = conditions[:id][1]
     
@@ -302,18 +304,18 @@ module Authorization
                 puts "  User has access to occupancy? #{user_has_access_to_occupancy}"
                 if user_has_access_to_occupancy
                   puts "  ✓ This attribute matched conditions"
+                  matching_conditions_count += 1
                 else
                   puts "  ✗ This attribute did not match conditions"
-                  current_attribute_matched = false
+                  any_condition_failed = true
                 end
               end
             end
 
-            if current_attribute_matched
-              any_attribute_matched = true
+            if matching_conditions_count == conditions.count
               puts "  ✓ All conditions matched for this attribute"
+              matching_attributes_count += 1
             else
-              all_attributes_matched = false
               puts "  ✗ Not all conditions matched for this attribute"
             end
           end
@@ -321,8 +323,8 @@ module Authorization
           puts "  Finished checking attributes, checking if rule is authorized"
           
           if rule.respond_to?(:join_operator) && rule.join_operator == :and
-            puts "  Rule uses AND operator, checking if all attributes matched: #{all_attributes_matched}"
-            if all_attributes_matched
+            puts "  Rule uses AND operator, checking if all attributes matched: #{matching_attributes_count == rule.attributes.count}"
+            if matching_attributes_count == rule.attributes.count
               puts "  All attributes matched, checking SpiceDB permission"
               authorized = @auth_service.check_permission(
                 resource: { type: "vhost", id: vhost_id },
@@ -334,8 +336,8 @@ module Authorization
               puts "  Not all attributes matched, authorization denied for this rule"
             end
           else
-            puts "  Rule uses OR operator (default), checking if any attribute matched: #{any_attribute_matched}"
-            if any_attribute_matched
+            puts "  Rule uses OR operator (default), checking if any attribute matched: #{matching_attributes_count > 0}"
+            if matching_attributes_count > 0
               puts "  At least one attribute matched, checking SpiceDB permission"
               authorized = @auth_service.check_permission(
                 resource: { type: "vhost", id: vhost_id },
