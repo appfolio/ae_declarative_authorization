@@ -214,6 +214,7 @@ module Authorization
         puts "\n==== Processing new rule ===="
         puts "Rule: #{rule.inspect}"
         puts "Role: #{rule.role}"
+        puts "Join Operator: #{rule.join_operator}" if rule.respond_to?(:join_operator)
 
         permission_to_check = rule.role.to_s.gsub("__", "_") + "_permission"
         puts "Permission to check: #{permission_to_check}"
@@ -230,6 +231,9 @@ module Authorization
           return true if authorized
         else
           puts "Rule has #{rule.attributes.count} attributes, examining them:"
+    
+          all_attributes_matched = true
+          any_attribute_matched = false
           
           rule.attributes.each_with_index do |attribute, index|
             puts "\n  -- Attribute ##{index + 1}: #{attribute.inspect}"
@@ -245,7 +249,7 @@ module Authorization
             next unless conditions.is_a?(Hash)
 
             puts "  Checking conditions against current values:"
-            condition_matched = false
+            current_attribute_matched = true
 
             if conditions.key?(:granular_permissions)
               rule_requires = conditions[:granular_permissions][1]
@@ -253,16 +257,14 @@ module Authorization
 
               puts "  Granular permissions - Rule requires: #{rule_requires}, Actual: #{actual_value}"
               if rule_requires == actual_value
-                condition_matched = true
                 puts "  ✓ Granular permissions condition matched!"
               else
                 puts "  ✗ Granular permissions condition did not match"
+                current_attribute_matched = false
               end
-            else
-              puts "  (No granular_permissions condition to check)"
             end
             
-            if conditions.key?(:is_renewal)
+            if conditions.key?(:is_renewal) && current_attribute_matched
               rule_requires = conditions[:is_renewal][1]
               # If options[:object] has is_renewal, we'll use that value instead of obtaining it from SpiceDB.
               # This allows for Blue Moon leases and others to be checked without having to make a SpiceDB call for the value of is_renewal.
@@ -276,36 +278,73 @@ module Authorization
                   resource_type: "lease_document",
                   resource_id: options[:object]&.lease_document_uuid.to_s,
                   permission: "renewal",
-                  subject_type: "lease_document",
+                  subject_type: "lease_document"
                 )
-                actual_value = response[:subject_ids].any?
+                actual_value = response.any?
               end
 
               puts "  Is renewal - Rule requires: #{rule_requires}, Actual: #{actual_value}"
               if rule_requires == actual_value
-                condition_matched = true
                 puts "  ✓ Is_renewal condition matched!"
               else
                 puts "  ✗ Is_renewal condition did not match"
+                current_attribute_matched = false
               end
-            else
-              puts "  (No is_renewal condition to check)"
             end
-            
-            if condition_matched
-              # For now, we will assume each rule's conditions are OR'd together. This is not the case
-              # for all rules, but it's the most common case and a good starting point.
-              puts "  At least one matching condition found, checking spicedb"
-              
+    
+            if conditions.key?(:id) && current_attribute_matched
+              condition_type = conditions[:id][0]
+              condition_proc = conditions[:id][1]
+    
+              if condition_type == :id_in_scope && condition_proc.is_a?(Proc)
+                puts "  Checking Occupancy ID in scope condition"
+                user_has_access_to_occupancy = attribute.validate?(attr_validator)
+                puts "  User has access to occupancy? #{user_has_access_to_occupancy}"
+                if user_has_access_to_occupancy
+                  puts "  ✓ This attribute matched conditions"
+                else
+                  puts "  ✗ This attribute did not match conditions"
+                  current_attribute_matched = false
+                end
+              end
+            end
+
+            if current_attribute_matched
+              any_attribute_matched = true
+              puts "  ✓ All conditions matched for this attribute"
+            else
+              all_attributes_matched = false
+              puts "  ✗ Not all conditions matched for this attribute"
+            end
+          end
+
+          puts "  Finished checking attributes, checking if rule is authorized"
+          
+          if rule.respond_to?(:join_operator) && rule.join_operator == :and
+            puts "  Rule uses AND operator, checking if all attributes matched: #{all_attributes_matched}"
+            if all_attributes_matched
+              puts "  All attributes matched, checking SpiceDB permission"
               authorized = @auth_service.check_permission(
                 resource: { type: "vhost", id: vhost_id },
                 permission: permission_to_check
               )
               puts "  Authorized? #{authorized}"
-
               return true if authorized
             else
-              puts "  No matching conditions, skipping spicedb check for this attribute"
+              puts "  Not all attributes matched, authorization denied for this rule"
+            end
+          else
+            puts "  Rule uses OR operator (default), checking if any attribute matched: #{any_attribute_matched}"
+            if any_attribute_matched
+              puts "  At least one attribute matched, checking SpiceDB permission"
+              authorized = @auth_service.check_permission(
+                resource: { type: "vhost", id: vhost_id },
+                permission: permission_to_check
+              )
+              puts "  Authorized? #{authorized}"
+              return true if authorized
+            else
+              puts "  No attributes matched, authorization denied for this rule"
             end
           end
         end
