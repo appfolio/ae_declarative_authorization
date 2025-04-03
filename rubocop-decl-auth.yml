@@ -3,5 +3,6 @@ require:
 
 DeclAuth/BeforeActionsPrecedeAccessFilter:
   Enabled: true
+  Severity: warning
   Include:
       - '**/controllers/**/*controller.rb'
