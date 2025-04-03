@@ -458,6 +458,31 @@ authorization do
 end
 ```
 
+Roles and rules can also be dynamically disabled if necessary. **Note** This is not recommended,
+but may be useful in certain cases, e.g. when a system's authorization policy is in transition,
+and using `if_attribute` is too cumbersome to maintain.
+If this option is not provided, the role is always enabled.
+```ruby
+authorization do
+    role :thing_doer do
+      # permissions for :thing_doer are dynamic based on the :do_more feature flag
+      has_permission_on :things, :to => :do, :enabled => proc { !FeatureFlag.enabled?(:do_more) }
+      has_permission_on :things, :to => :do_more, :enabled => proc { FeatureFlag.enabled?(:do_more) }
+    end
+
+    # this can also be done at the role level, if there's a lot of permissions to alternate
+    #   or if the role is defined multiple places, or if the role is given different name(s)
+    #   when the feature flag is enabled
+    role :when_feature_flag_is_off, :enabled => proc { !FeatureFlag.enabled?(:do_more) } do
+      has_permission_on :things, :to => :do
+    end
+  
+    role :when_feature_flag_is_on, :enabled => proc { FeatureFlag.enabled?(:do_more) } do
+      has_permission_on :things, :to => :do
+    end
+end
+```
+
 Lastly, not only privileges may be organized in a hierarchy but roles as well.
 Here, project manager inherit the permissions of employees.
 

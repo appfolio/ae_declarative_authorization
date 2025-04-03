@@ -449,6 +449,8 @@ module Authorization
       @attributes = []
       @source_file = options[:source_file]
       @source_line = options[:source_line]
+      @rule_enabled = options[:enabled] || proc { true }
+      @role_enabled = options[:role_enabled] || proc { true }
     end
 
     def initialize_copy(from)
@@ -466,6 +468,8 @@ module Authorization
     end
 
     def matches?(roles, privs, context = nil)
+      return false unless @role_enabled.call && @rule_enabled.call
+
       roles = Hash[[*roles].map { |r| [r, true] }] unless roles.is_a?(Hash)
       @contexts.include?(context) && roles.include?(@role) && privs.any? { |priv| @privileges.include?(priv) }
     end

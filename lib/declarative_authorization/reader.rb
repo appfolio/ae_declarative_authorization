@@ -2,8 +2,8 @@
 module Authorization
   # Parses an authorization configuration file in the authorization DSL and
   # constructs a data model of its contents.
-  # 
-  # For examples and the modeled data model, see the 
+  #
+  # For examples and the modeled data model, see the
   # README[link:files/README_rdoc.html].
   #
   # Also, see role definition methods
@@ -43,7 +43,7 @@ module Authorization
     class DSLError < Exception; end
     # Signals errors in the syntax of an authorization DSL.
     class DSLSyntaxError < DSLError; end
-    
+
     # Top-level reader, parses the methods +privileges+ and +authorization+.
     # +authorization+ takes a block with authorization rules as described in
     # AuthorizationRulesReader.  The block to +privileges+ defines privilege
@@ -96,6 +96,7 @@ module Authorization
       # if the file cannot be found.
       def load!(dsl_file)
         raise ::Authorization::Reader::DSLFileNotFoundError, "Error reading authorization rules file with path '#{dsl_file}'!  Please ensure it exists and that it is accessible." unless File.exist?(dsl_file)
+
         load(dsl_file)
       end
 
@@ -177,6 +178,7 @@ module Authorization
       # be used inside a privilege block.
       def includes(*privileges)
         raise DSLError, "includes only in privilege block" if @current_priv.nil?
+
         privileges.each do |priv|
           priv = priv.to_sym
           append_privilege priv
@@ -188,10 +190,11 @@ module Authorization
 
     class AuthorizationRulesReader
       attr_reader :roles, :role_hierarchy, :auth_rules,
-        :role_descriptions, :role_titles, :omnipotent_roles # :nodoc:
+                  :role_descriptions, :role_titles, :omnipotent_roles # :nodoc:
 
       def initialize # :nodoc:
         @current_role = nil
+        @current_role_enabled = nil
         @current_rule = nil
         @roles = []
         @omnipotent_roles = []
@@ -221,9 +224,23 @@ module Authorization
       #     has_permissions_on ...
       #   end
       #
+      # Options:
+      # [+:title+]
+      #   A string with a human-readable title for the role.
+      # [+:description+]
+      #   A string with a human-readable description for the role.
+      # [+:enabled+]
+      #   A callable object (e.g. a proc) that returns true or false (e.g. a feature flag).
+      #   When false, any rules defined in the scope of this role will be ignored at runtime.
+      #   NOTE: If you define more auth rules for the same role in another location, those
+      #   rules will not be affected by the enabled callable on the first block.
       def role(role, options = {})
         append_role role, options
         @current_role = role
+        @current_role_enabled = options[:enabled]
+
+        raise DSLError, '"enabled" option must be callable' if @current_role_enabled && !@current_role_enabled.respond_to?(:call)
+
         yield
       ensure
         @current_role = nil
@@ -241,10 +258,11 @@ module Authorization
       #
       def includes(*roles)
         raise DSLError, "includes only in role blocks" if @current_role.nil?
+
         @role_hierarchy[@current_role] ||= []
         @role_hierarchy[@current_role] += roles.flatten
       end
-      
+
       # Allows the definition of privileges to be allowed for the current role,
       # either in a has_permission_on block or directly in one call.
       #   role :admin
@@ -264,7 +282,7 @@ module Authorization
       # statements in one block are OR'ed if no :+join_by+ option is given
       # (see below).  To AND conditions, either set :+join_by+ to :and or place
       # them in one if_attribute statement.
-      # 
+      #
       # Available options
       # [:+to+]
       #   A symbol or an array of symbols representing the privileges that
@@ -272,26 +290,35 @@ module Authorization
       # [:+join_by+]
       #   Join operator to logically connect the constraint statements inside
       #   of the has_permission_on block.  May be :+and+ or :+or+.  Defaults to :+or+.
-      #
+      # [+:enabled+]
+      #   A callable object (e.g. a proc) that returns true or false. When false, this
+      #   auth rule will be ignored at runtime.
       def has_permission_on(*args)
         options = args.extract_options!
         context = args.flatten
-        
+
         raise DSLError, "has_permission_on only allowed in role blocks" if @current_role.nil?
-        options = {:to => [], :join_by => :or}.merge(options)
-        
-        privs = options[:to] 
+
+        options = {to: [], join_by: :or}.merge(options)
+
+        privs = options[:to]
         privs = [privs] unless privs.is_a?(Array)
         raise DSLError, "has_permission_on either needs a block or :to option" if !block_given? and privs.empty?
 
+        rule_enabled = options[:enabled]
+        raise DSLError, '"enabled" option must be callable' if rule_enabled && !rule_enabled.respond_to?(:call)
+
         file, line = file_and_line_number_from_call_stack
-        rule = AuthorizationRule.new(@current_role, privs.map(&:to_sym), context, options[:join_by],
-                   :source_file => file, :source_line => line)
+        rule = AuthorizationRule.new(
+          @current_role, privs.map(&:to_sym), context, options[:join_by],
+          source_file: file, source_line: line, enabled: rule_enabled, role_enabled: @current_role_enabled
+        )
         @auth_rules << rule
         if block_given?
           @current_rule = rule
           yield
           raise DSLError, "has_permission_on block content specifies no privileges" if rule.privileges.empty?
+
           # TODO ensure?
           @current_rule = nil
         end
@@ -303,6 +330,7 @@ module Authorization
       #   end
       def has_omnipotence
         raise DSLError, "has_omnipotence only allowed in role blocks" if @current_role.nil?
+
         @omnipotent_roles << @current_role
       end
 
@@ -313,9 +341,10 @@ module Authorization
       #   end
       def description(text)
         raise DSLError, "description only allowed in role blocks" if @current_role.nil?
+
         role_descriptions[@current_role] = text
       end
-      
+
       # Sets a human-readable title for the current role.  E.g.
       #   role :admin
       #     title "Administrator"
@@ -323,9 +352,10 @@ module Authorization
       #   end
       def title(text)
         raise DSLError, "title only allowed in role blocks" if @current_role.nil?
+
         role_titles[@current_role] = text
       end
-      
+
       # Used in a has_permission_on block, to may be used to specify privileges
       # to be assigned to the current role under the conditions specified in
       # the current block.
@@ -336,13 +366,14 @@ module Authorization
       #   end
       def to(*privs)
         raise DSLError, "to only allowed in has_permission_on blocks" if @current_rule.nil?
+
         @current_rule.append_privileges(privs.flatten)
       end
 
       # In a has_permission_on block, if_attribute specifies conditions
       # of dynamic parameters that have to be met for the user to meet the
       # privileges in this block.  Conditions are evaluated on the context
-      # object.  Thus, the following allows CRUD for branch admins only on 
+      # object.  Thus, the following allows CRUD for branch admins only on
       # employees that belong to the same branch as the current user.
       #   role :branch_admin
       #     has_permission_on :employees do
@@ -354,7 +385,7 @@ module Authorization
       # operator is contains for collections.  In the block supplied to the
       # operator, +user+ specifies the current user for whom the condition
       # is evaluated.
-      # 
+      #
       # Conditions may be nested:
       #   role :company_admin
       #     has_permission_on :employees do
@@ -374,7 +405,7 @@ module Authorization
       #   object.company.branches.any? { |branch| branch.manager ... }
       # will be executed.  with_permission_to scopes construct efficient SQL
       # joins, though.
-      # 
+      #
       # Multiple attributes in one :if_attribute statement are AND'ed.
       # Multiple if_attribute statements are OR'ed if the join operator for the
       # has_permission_on block isn't explicitly set.  Thus, the following would
@@ -395,6 +426,7 @@ module Authorization
       #
       def if_attribute(attr_conditions_hash)
         raise DSLError, "if_attribute only in has_permission blocks" if @current_rule.nil?
+
         parse_attribute_conditions_hash!(attr_conditions_hash)
         @current_rule.append_attribute Attribute.new(attr_conditions_hash)
       end
@@ -447,13 +479,14 @@ module Authorization
       #
       def if_permitted_to(privilege, attr_or_hash = nil, options = {})
         raise DSLError, "if_permitted_to only in has_permission blocks" if @current_rule.nil?
+
         options[:context] ||= attr_or_hash.delete(:context) if attr_or_hash.is_a?(Hash)
         # only :context option in attr_or_hash:
         attr_or_hash = nil if attr_or_hash.is_a?(Hash) and attr_or_hash.empty?
         @current_rule.append_attribute AttributeWithPermission.new(privilege,
-            attr_or_hash, options[:context])
+                                                                   attr_or_hash, options[:context])
       end
-      
+
       # In an if_attribute statement, is says that the value has to be
       # met exactly by the if_attribute attribute.  For information on the block
       # argument, see if_attribute.
@@ -486,7 +519,7 @@ module Authorization
       def intersects_with(&block)
         [:intersects_with, block]
       end
-      
+
       # In an if_attribute statement, is_in says that the value has to
       # contain the attribute value.
       # For information on the block argument, see if_attribute.
@@ -498,7 +531,7 @@ module Authorization
       def is_not_in(&block)
         [:is_not_in, block]
       end
-      
+
       # Less than
       def lt(&block)
         [:lt, block]
@@ -538,7 +571,7 @@ module Authorization
         end
         hash.merge!(merge_hash)
       end
-      
+
       def file_and_line_number_from_call_stack
         caller_parts = caller(2).first.split(':')
         [caller_parts[0] == "(eval)" ? nil : caller_parts[0],
