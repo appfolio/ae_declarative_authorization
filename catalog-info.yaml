@@ -13,4 +13,4 @@ metadata:
 spec:
   type: library
   lifecycle: maintenance
-  owner: bourne-identity
+  owner: appfolio-developers
