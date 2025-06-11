@@ -81,8 +81,8 @@ module DeclarativeAuthorization
         def privilege(privilege, &block)
           privileges = [privilege].flatten.uniq
 
-          unless privileges.all? { |privilege| [:hidden, :read, :write, :write_without_delete].include?(privilege) }
-            raise "Privilege (:when) must be :hidden, :read, :write_without_delete, or :write. Found #{privilege.inspect}."
+          unless privileges.all? { |privilege| [:granted, :hidden, :read, :write, :write_without_delete].include?(privilege) }
+            raise "Privilege (:when) must be :granted, :hidden, :read, :write_without_delete, or :write. Found #{privilege.inspect}."
           end
 
           Blockenspiel.invoke(block, PrivilegeTestGenerator.new(@test_class, @role, privileges))
