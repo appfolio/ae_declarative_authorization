@@ -2,7 +2,20 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.6.1...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.7.0...HEAD)
+
+**Merged pull requests:**
+
+- Add support for testing granular permissions [\#44](https://github.com/appfolio/ae_declarative_authorization/pull/44) ([andrewdt23](https://github.com/andrewdt23))
+- \[KNOW-154\]: Use CODEOWNERS to determine Developer Portal catalog ownership [\#43](https://github.com/appfolio/ae_declarative_authorization/pull/43) ([modethirteen](https://github.com/modethirteen))
+
+## [v1.7.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.7.0) (2025-06-18)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.6.1...v1.7.0)
+
+## [v1.6.1](https://github.com/appfolio/ae_declarative_authorization/tree/v1.6.1) (2025-02-05)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.3.0...v1.6.1)
 
 **Merged pull requests:**
 
@@ -11,10 +24,6 @@
 - Add a rubocop for filter\_access\_to placement [\#38](https://github.com/appfolio/ae_declarative_authorization/pull/38) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
 - Appraise Rails 7.2 [\#37](https://github.com/appfolio/ae_declarative_authorization/pull/37) ([Maimer](https://github.com/Maimer))
 - Add Backstage catalog metadata file\(s\) [\#36](https://github.com/appfolio/ae_declarative_authorization/pull/36) ([modethirteen](https://github.com/modethirteen))
-
-## [v1.6.1](https://github.com/appfolio/ae_declarative_authorization/tree/v1.6.1) (2025-02-05)
-
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.3.0...v1.6.1)
 
 ## [v1.3.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.3.0) (2024-02-29)
 
