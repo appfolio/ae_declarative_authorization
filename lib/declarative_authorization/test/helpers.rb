@@ -119,21 +119,23 @@ module DeclarativeAuthorization
 
         def role(role, &block)
           raise "Role cannot be blank!" if role.blank?
-          Blockenspiel.invoke(block, RoleTestGenerator.new(@test_class, role))
+
+          Blockenspiel.invoke(block, RoleTestGenerator.new(@test_class, role)) if @test_class.only_run_roles.nil? || @test_class.only_run_roles.include?(role)
         end
 
       end
 
       module ClassMethods
-        attr_reader :access_tests_defined
+        attr_reader :access_tests_defined, :only_run_roles
 
         def skip_access_tests_for_actions(*actions)
           @skipped_access_test_actions ||= []
           @skipped_access_test_actions += actions.map(&:to_sym)
         end
 
-        def access_tests(&block)
+        def access_tests(only_run_roles: nil, &block)
           @access_tests_defined = true
+          @only_run_roles = only_run_roles
           file_output ||= [ Dir.tmpdir + '/test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
           unless File.exist?(file_output)
             FileUtils.mkdir_p(File.dirname(file_output))
