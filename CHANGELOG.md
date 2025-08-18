@@ -2,16 +2,26 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.7.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.0.0...HEAD)
+
+**Merged pull requests:**
+
+- test: fix flaky tests [\#47](https://github.com/appfolio/ae_declarative_authorization/pull/47) ([Maimer](https://github.com/Maimer))
+- \[APT-2412\] Add :debug option [\#46](https://github.com/appfolio/ae_declarative_authorization/pull/46) ([jovan-appfolio](https://github.com/jovan-appfolio))
+- Add support for running individual access tests [\#45](https://github.com/appfolio/ae_declarative_authorization/pull/45) ([andrewdt23](https://github.com/andrewdt23))
+
+## [v2.0.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.0.0) (2025-08-18)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.7.0...v2.0.0)
+
+## [v1.7.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.7.0) (2025-06-18)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.6.1...v1.7.0)
 
 **Merged pull requests:**
 
 - Add support for testing granular permissions [\#44](https://github.com/appfolio/ae_declarative_authorization/pull/44) ([andrewdt23](https://github.com/andrewdt23))
 - \[KNOW-154\]: Use CODEOWNERS to determine Developer Portal catalog ownership [\#43](https://github.com/appfolio/ae_declarative_authorization/pull/43) ([modethirteen](https://github.com/modethirteen))
-
-## [v1.7.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.7.0) (2025-06-18)
-
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.6.1...v1.7.0)
 
 ## [v1.6.1](https://github.com/appfolio/ae_declarative_authorization/tree/v1.6.1) (2025-02-05)
 
