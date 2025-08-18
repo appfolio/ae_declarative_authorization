@@ -298,15 +298,27 @@ module DeclarativeAuthorization
         errors_to_reraise << Mocha::ExpectationError if defined?(Mocha::ExpectationError)
 
         begin
+          if options[:debug]
+            puts "Debug: Sending request - role: #{role}, action: #{action}, privilege: #{privilege}, params: #{params.inspect}, http_method: #{http_method}, xhr: #{xhr}"
+          end
           send *send_args, **send_kwargs
+          if options[:debug]
+            puts "Debug: Response status: #{response.status}" if response.status
+            puts "Debug: flash[:error]: #{flash[:error]}" if flash[:error]
+            puts "Debug: flash[:alert]: #{flash[:alert]}" if flash[:alert]
+          end
           return response_forbidden?
         rescue *errors_to_reraise => e
           raise e
         rescue => e
-          if options[:print_error]
-            puts "\n#{e.class.name} raised in action '#{action}':"
-            puts e.message
-            puts e.backtrace.join("\n")
+          # Exceptions are expected from controllers as complete requests are not always made in access tests
+          if options[:debug]
+            puts "Debug: Exception raised from controller, not considered as an error for access tests as response is not coming from the declarative authorization framework."
+            puts "Debug: Response status: #{response.status}" if response.status
+            puts "Debug: flash[:error]: #{flash[:error]}" if flash[:error]
+            puts "Debug: flash[:alert]: #{flash[:alert]}" if flash[:alert]
+            puts "Debug: Exception: #{e.class} - #{e.message}"
+            puts e.backtrace.join("\n") if e.backtrace
           end
           return false
         end
