@@ -138,9 +138,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :id => test_attr_1)
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).references(:test_attrs, :test_attrs_test_models, :test_attrs_test_models_2).length
-
-    TestAttr.delete_all
-    TestModel.delete_all
   end
 
   def test_with_belongs_to_and_has_many_with_contains
@@ -166,8 +163,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestAttr.with_permissions_to( :update_test_attrs, :user => user )
     end
-    TestAttr.delete_all
-    TestModel.delete_all
   end
 
   def test_with_nested_has_many
@@ -194,10 +189,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     prohibited_user = MockUser.new(:test_role, :test_attr_value => 4)
     assert_equal 1, Company.with_permissions_to(:read, :user => user).length
     assert_equal 0, Company.with_permissions_to(:read, :user => prohibited_user).length
-
-    Company.delete_all
-    Branch.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_nested_has_many_through
@@ -227,10 +218,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     prohibited_user = MockUser.new(:test_role, :test_attr_value => 4)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
     assert_equal 0, TestModel.with_permissions_to(:read, :user => prohibited_user).length
-
-    TestModel.delete_all
-    TestAttrThrough.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_is
@@ -256,7 +243,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update_test_models, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_named_scope_on_proxy
@@ -279,8 +265,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_attr_value => test_attr_1.id)
     assert_equal 1, test_model_1.test_attrs.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_named_scope_on_named_scope
@@ -315,9 +299,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     TestModel.query_count = 0
     assert_equal 1, country.test_models.with_permissions_to(:read, :user => user).length
-
-    TestModel.delete_all
-    Country.delete_all
   end
 
   def test_with_modified_context
@@ -338,7 +319,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_company_id => test_company.id)
     assert_equal 1, SmallCompany.with_permissions_to(:read,
       :user => user).length
-    SmallCompany.delete_all
   end
 
   def test_with_is_nil
@@ -366,7 +346,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
       :context => :test_models, :user => MockUser.new(:test_role)).first
     assert_equal test_model_2, TestModel.with_permissions_to(:read,
       :context => :test_models, :user => MockUser.new(:test_role_not_nil)).first
-    TestModel.delete_all
   end
 
   def test_with_not_is
@@ -388,7 +367,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_attr_value => test_model_1.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
   end
 
   def test_with_lt
@@ -414,7 +392,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update_test_models, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_with_lte
@@ -440,7 +417,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update_test_models, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_with_gt
@@ -466,7 +442,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update_test_models, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_with_gte
@@ -492,7 +467,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update_test_models, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_with_empty_obligations
@@ -513,7 +487,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestModel.with_permissions_to(:update, :user => user)
     end
-    TestModel.delete_all
   end
 
   def test_multiple_obligations
@@ -538,7 +511,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_attr_value => test_model_1.id,
                         :test_attr_value_2 => test_model_2.id)
     assert_equal 2, TestModel.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
   end
 
   def test_multiple_roles
@@ -566,7 +538,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role)
     assert_equal 2, TestAttr.with_permissions_to(:read, :user => user).length
-    TestAttr.delete_all
   end
 
   def test_multiple_and_empty_obligations
@@ -588,7 +559,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_attr_value => test_model_1.id)
     assert_equal 2, TestModel.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
   end
 
   def test_multiple_attributes
@@ -610,7 +580,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_attr_value => test_model_1.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
   end
 
   def test_multiple_belongs_to
@@ -631,7 +600,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :id => 1)
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).length
-    TestAttr.delete_all
   end
 
   def test_with_is_and_priv_hierarchy
@@ -660,7 +628,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
       :context => :test_models, :user => user).length
     assert_equal 1, TestModel.with_permissions_to(:list, :user => user).length
 
-    TestModel.delete_all
   end
 
   def test_with_is_and_belongs_to
@@ -683,9 +650,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_model => test_model_1)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_deep_attribute
@@ -708,9 +672,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_model_id => test_model_1.id)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_multiple_conditions
@@ -734,9 +695,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_model_id => test_model_1.id)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_anded_rules
@@ -761,9 +719,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_model => test_model_1)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_contains
@@ -789,9 +744,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
                         :id => test_model_1.test_attrs.first.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).where(:id => test_model_1.id).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_does_not_contain
@@ -815,9 +767,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role,
                         :id => test_model_1.test_attrs.first.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_contains_conditions
@@ -847,9 +796,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role,
                         :id => test_model_1.test_attrs.last.id)
     assert_equal 0, TestModel.with_permissions_to(:read, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_contains_through_primary_key
@@ -877,10 +823,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role,
                         :id => test_attr_through_1.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
-
-    TestModel.delete_all
-    TestAttrThrough.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_intersects_with
@@ -910,9 +852,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role,
                         :test_attrs => [TestAttr.create!])
     assert_equal 0, TestModel.with_permissions_to(:read, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_is_and_has_one
@@ -935,9 +874,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     user = MockUser.new(:test_role, :test_attr => test_attr_1)
     assert_equal 1, TestModel.with_permissions_to(:read,
       :context => :test_models, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_is_in
@@ -962,9 +898,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
       :test_model_2 => test_model_2)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_not_is_in
@@ -991,9 +924,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
       :test_model_2 => test_model_2)
     assert_equal 1, TestAttr.with_permissions_to(:read,
       :context => :test_attrs, :user => user).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to
@@ -1017,8 +947,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :id => test_attr_1.id)
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_anded_if_permitted_to
@@ -1061,9 +989,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert Authorization::Engine.instance.permit?(:read, :object => test_model_1.test_attrs.first, :user => user_with_both_roles)
     assert Authorization::Engine.instance.permit?(:read, :object => test_model_for_second_role.test_attrs.first, :user => user_with_both_roles)
     assert_equal 2, TestAttr.with_permissions_to(:read, :user => user_with_both_roles).references(:test_attrs, :test_models).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to_with_no_child_permissions
@@ -1102,9 +1027,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     assert_raise Authorization::NotAuthorized do
       TestAttr.with_permissions_to(:read, :user => non_allowed_user).find(:all)
     end
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to_with_context_from_model
@@ -1131,8 +1053,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).length
     assert_equal 0, TestAttr.with_permissions_to(:read, :user => non_allowed_user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_has_many_if_permitted_to
@@ -1158,8 +1078,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
     non_allowed_user = MockUser.new(:test_role, :id => 333)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
     assert_equal 0, TestModel.with_permissions_to(:read, :user => non_allowed_user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_deep_has_many_if_permitted_to
@@ -1186,9 +1104,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role)
     assert_equal 1, Company.with_permissions_to(:read, :user => user).length
-    Company.delete_all
-    Branch.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to_and_empty_obligations
@@ -1210,8 +1125,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role)
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to_nil
@@ -1234,7 +1147,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :id => test_attr_1.id)
     assert_equal 0, TestAttr.with_permissions_to(:read, :user => user).length
-    TestAttr.delete_all
   end
 
   def test_with_if_permitted_to_self
@@ -1259,8 +1171,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :id => test_attr_1.id)
     assert_equal 1, TestModel.with_permissions_to(:update, :user => user).length
-    TestAttr.delete_all
-    TestModel.delete_all
   end
 
   def test_with_has_many_and_reoccuring_tables
@@ -1288,8 +1198,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role)
     assert_equal 1, TestAttr.with_permissions_to(:read, :user => user).length
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_ored_rules_and_reoccuring_tables
@@ -1322,9 +1230,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_attr => test_attr_2.test_model.test_attrs.last)
     assert_equal 2, TestAttr.with_permissions_to(:read, :user => user).references(:test_attrs, :test_models, :test_models_test_attrs, :test_attrs_test_models).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_with_many_ored_rules_and_reoccuring_tables
@@ -1359,9 +1264,6 @@ class NamedScopeModelTest < Test::Unit::TestCase
 
     user = MockUser.new(:test_role, :test_model => country.test_models.first)
     assert_equal 2, TestAttr.with_permissions_to(:read, :user => user).references(:test_attrs, :test_models, :test_models_countries).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 end
 
@@ -1400,9 +1302,6 @@ class ModelTest < Test::Unit::TestCase
     assert_nothing_raised do
       assert instance.permit?(:update, :user => user, :object => test_model.test_attr_has_one)
     end
-
-    TestModel.delete_all
-    TestAttr.delete_all
   end
 
   def test_model_security_write_allowed
@@ -1680,10 +1579,6 @@ class ModelTest < Test::Unit::TestCase
     without_access_control do
       assert_equal params[:model_data][:attr], test_model.reload.attr
     end
-
-    TestAttr.delete_all
-    TestModelSecurityModel.delete_all
-    Branch.delete_all
   end
 
   def test_using_access_control
@@ -1709,7 +1604,6 @@ class ModelTest < Test::Unit::TestCase
                           :user => MockUser.new(:test_role))
     assert !engine.permit?(:read, :object => TestAttr.new,
                           :user => MockUser.new(:test_role))
-    TestModel.delete_all
   end
 
   def test_authorization_permit_nested_association_proxy
@@ -1744,9 +1638,6 @@ class ModelTest < Test::Unit::TestCase
                          :user => MockUser.new(:test_role))
    assert !engine.permit?(:read, :object => test_branch_3,
                          :user => MockUser.new(:test_role))
-   TestModel.delete_all
-   Branch.delete_all
-   TestAttr.delete_all
   end
 
   def test_multiple_roles_with_has_many_through
@@ -1782,10 +1673,6 @@ class ModelTest < Test::Unit::TestCase
         :test_attr_through_id => test_model_1.test_attr_throughs.first.id,
         :test_attr_through_2_id => test_model_2.test_attr_throughs.first.id)
     assert_equal 2, TestModel.with_permissions_to(:read, :user => user).references(:test_models, :test_attr_throughs).length
-
-    TestModel.delete_all
-    TestAttr.delete_all
-    TestAttrThrough.delete_all
   end
 
   def test_model_permitted_to

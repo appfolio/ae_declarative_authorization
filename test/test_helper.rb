@@ -87,6 +87,12 @@ module Test
   module Unit
     class TestCase < Minitest::Test
       include Authorization::TestHelper
+
+      def setup
+        ActiveRecord::Base.descendants.each do |model|
+          model.delete_all unless model.abstract_class? || !model.table_exists?
+        end
+      end
     end
   end
 end
