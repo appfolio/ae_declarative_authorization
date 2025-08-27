@@ -3,6 +3,7 @@
 /pkg/
 /tmp/
 /test/profiles/
+.coverage
 
 # Only generate Appraisal gemfiles on CI
 /gemfiles/
