@@ -21,6 +21,24 @@ module Authorization
   # The exception is raised to ensure that the entire rule is invalidated.
   class NilAttributeValueError < AuthorizationError; end
 
+  class Config
+    # A function that takes one argument:
+    # - event details (hash)
+    attr_accessor :authorization_denied_callback
+
+    def initialize
+      @authorization_denied_callback = nil
+    end
+  end
+
+  def self.config
+    @config ||= Config.new
+  end
+
+  def self.configure
+    yield config
+  end
+
   AUTH_DSL_FILES = [Pathname.new(Rails.root || '').join("config", "authorization_rules.rb").to_s] unless defined? AUTH_DSL_FILES
 
   # Controller-independent method for retrieving the current user.
