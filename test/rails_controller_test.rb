@@ -180,6 +180,31 @@ class BasicControllerTest < ActionController::TestCase
     @controller.authorization_engine = Authorization::Engine.new(reader)
     assert @controller.permitted_to?(:test)
   end
+
+  def test_authorization_denied_callback_called_on_denial
+    called_args = nil
+    Authorization.config.authorization_denied_callback = proc do |details|
+      called_args = details
+    end
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          has_permission_on :permissions, :to => :test
+        end
+      end
+    }
+    # User does not have permission for test_action_2
+    request!(MockUser.new(:test_role), "test_action_2", reader)
+    assert !@controller.authorized?
+    assert called_args, "authorization_denied_callback should have been called"
+    assert_equal "permissions_2", called_args[:context]
+    assert_equal "test_action_2", called_args[:action]
+    assert_equal "/specific_mocks/test_action_2", called_args[:path]
+    assert_equal false, called_args[:attribute_check_denial]
+  ensure
+    Authorization.config.authorization_denied_callback = nil
+  end
 end
 
 
