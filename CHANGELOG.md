@@ -2,17 +2,27 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.0.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.0...HEAD)
+
+**Merged pull requests:**
+
+- Configure NPM and Yarn to use custom NPM package repository [\#50](https://github.com/appfolio/ae_declarative_authorization/pull/50) ([appfolio-sourcegraph-batch-changes[bot]](https://github.com/apps/appfolio-sourcegraph-batch-changes))
+- \[APT-2440\] Authorization Denied Events [\#49](https://github.com/appfolio/ae_declarative_authorization/pull/49) ([jovan-appfolio](https://github.com/jovan-appfolio))
+- Upload test coverage reports to CircleCI [\#48](https://github.com/appfolio/ae_declarative_authorization/pull/48) ([andrewdt23](https://github.com/andrewdt23))
+
+## [v2.1.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.0) (2025-09-24)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.0.0...v2.1.0)
+
+## [v2.0.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.0.0) (2025-08-18)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.7.0...v2.0.0)
 
 **Merged pull requests:**
 
 - test: fix flaky tests [\#47](https://github.com/appfolio/ae_declarative_authorization/pull/47) ([Maimer](https://github.com/Maimer))
 - \[APT-2412\] Add :debug option [\#46](https://github.com/appfolio/ae_declarative_authorization/pull/46) ([jovan-appfolio](https://github.com/jovan-appfolio))
 - Add support for running individual access tests [\#45](https://github.com/appfolio/ae_declarative_authorization/pull/45) ([andrewdt23](https://github.com/andrewdt23))
-
-## [v2.0.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.0.0) (2025-08-18)
-
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v1.7.0...v2.0.0)
 
 ## [v1.7.0](https://github.com/appfolio/ae_declarative_authorization/tree/v1.7.0) (2025-06-18)
 
