@@ -67,6 +67,33 @@ class BasicResourcesControllerTest < ActionController::TestCase
         :clear => [:@basic_resource])
     assert @controller.authorized?
   end
+
+  def test_authorization_denied_callback_called_on_attribute_check_denial
+    called_args = nil
+    Authorization.config.authorization_denied_callback = proc do |details|
+      called_args = details
+    end
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :allowed_role do
+          has_permission_on :basic_resources, :to => :show do
+            if_attribute :id => is {"1"}
+          end
+        end
+      end
+    }
+
+    allowed_user = MockUser.new(:allowed_role)
+    request!(allowed_user, :show, reader, :id => "2")
+    assert !@controller.authorized?
+
+    assert called_args, "authorization_denied_callback should have been called"
+    assert_equal "basic_resources", called_args[:context]
+    assert_equal "show", called_args[:action]
+    assert_equal "/basic_resources/show/2", called_args[:path]
+    assert_equal true, called_args[:attribute_check_denial]
+  end
 end
 
 

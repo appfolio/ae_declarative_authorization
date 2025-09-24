@@ -21,6 +21,24 @@ module Authorization
   # The exception is raised to ensure that the entire rule is invalidated.
   class NilAttributeValueError < AuthorizationError; end
 
+  class Config
+    # A function that takes one argument:
+    # - event details (hash)
+    attr_accessor :authorization_denied_callback
+
+    def initialize
+      @authorization_denied_callback = nil
+    end
+  end
+
+  def self.config
+    @config ||= Config.new
+  end
+
+  def self.configure
+    yield config
+  end
+
   AUTH_DSL_FILES = [Pathname.new(Rails.root || '').join("config", "authorization_rules.rb").to_s] unless defined? AUTH_DSL_FILES
 
   # Controller-independent method for retrieving the current user.
@@ -192,6 +210,24 @@ module Authorization
       end
 
       if options[:bang]
+        # Call authorization_denied_callback if configured
+        if Authorization.config.authorization_denied_callback
+          action = if options[:controller]&.respond_to?(:action_name)
+                     options[:controller].action_name
+                   elsif options[:controller]&.respond_to?(:route) # Grape API
+                     options[:controller].route&.request_method
+                   end
+
+          Authorization.config.authorization_denied_callback&.call(
+            {
+              action: action,
+              path: options[:controller]&.respond_to?(:request) ? options[:controller].request&.path : nil,
+              context: options[:context].to_s,
+              attribute_check_denial: !rules.empty?
+            }
+          )
+        end
+
         if rules.empty?
           raise NotAuthorized, "No matching rules found for #{privilege} for User with id #{user.try(:id)} " +
             "(roles #{roles.inspect}, privileges #{privileges.inspect}, " +
