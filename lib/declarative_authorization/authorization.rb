@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/reader.rb'
 require "set"
 require "forwardable"
 require 'rails'
+require 'uri'
 
 module Authorization
   # An exception raised if anything goes wrong in the Authorization realm
@@ -218,12 +219,16 @@ module Authorization
                      options[:controller].route&.request_method
                    end
 
-          Authorization.config.authorization_denied_callback&.call(
+          referer_url = options[:controller]&.respond_to?(:request) ? options[:controller].request&.referer : nil
+          referer_path = referer_url ? (URI.parse(referer_url).path rescue nil) : nil
+
+          Authorization.config.authorization_denied_callback.call(
             {
               action: action,
               path: options[:controller]&.respond_to?(:request) ? options[:controller].request&.path : nil,
               context: options[:context].to_s,
-              attribute_check_denial: !rules.empty?
+              attribute_check_denial: !rules.empty?,
+              referer: referer_path
             }
           )
         end

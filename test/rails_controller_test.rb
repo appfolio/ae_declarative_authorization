@@ -195,6 +195,7 @@ class BasicControllerTest < ActionController::TestCase
       end
     }
     # User does not have permission for test_action_2
+    @controller.request.env["HTTP_REFERER"] = "/foo/bar"
     request!(MockUser.new(:test_role), "test_action_2", reader)
     assert !@controller.authorized?
     assert called_args, "authorization_denied_callback should have been called"
@@ -202,6 +203,61 @@ class BasicControllerTest < ActionController::TestCase
     assert_equal "test_action_2", called_args[:action]
     assert_equal "/specific_mocks/test_action_2", called_args[:path]
     assert_equal false, called_args[:attribute_check_denial]
+    assert_equal "/foo/bar", called_args[:referer]
+  ensure
+    Authorization.config.authorization_denied_callback = nil
+  end
+
+  def test_authorization_denied_callback_called_on_denial__no_referer
+    called_args = nil
+    Authorization.config.authorization_denied_callback = proc do |details|
+      called_args = details
+    end
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          has_permission_on :permissions, :to => :test
+        end
+      end
+    }
+    # User does not have permission for test_action_2
+    @controller.request.env["HTTP_REFERER"] = nil
+    request!(MockUser.new(:test_role), "test_action_2", reader)
+    assert !@controller.authorized?
+    assert called_args, "authorization_denied_callback should have been called"
+    assert_equal "permissions_2", called_args[:context]
+    assert_equal "test_action_2", called_args[:action]
+    assert_equal "/specific_mocks/test_action_2", called_args[:path]
+    assert_equal false, called_args[:attribute_check_denial]
+    assert_equal nil, called_args[:referer]
+  ensure
+    Authorization.config.authorization_denied_callback = nil
+  end
+
+  def test_authorization_denied_callback_called_on_denial__uri_parse_error
+    called_args = nil
+    Authorization.config.authorization_denied_callback = proc do |details|
+      called_args = details
+    end
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          has_permission_on :permissions, :to => :test
+        end
+      end
+    }
+    # User does not have permission for test_action_2
+    @controller.request.env["HTTP_REFERER"] = "ht!tp://in valid"
+    request!(MockUser.new(:test_role), "test_action_2", reader)
+    assert !@controller.authorized?
+    assert called_args, "authorization_denied_callback should have been called"
+    assert_equal "permissions_2", called_args[:context]
+    assert_equal "test_action_2", called_args[:action]
+    assert_equal "/specific_mocks/test_action_2", called_args[:path]
+    assert_equal false, called_args[:attribute_check_denial]
+    assert_equal nil, called_args[:referer]
   ensure
     Authorization.config.authorization_denied_callback = nil
   end
