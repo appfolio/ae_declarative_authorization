@@ -2,17 +2,25 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.1...HEAD)
+
+**Merged pull requests:**
+
+- \[APT-2584\] Add referrer to authorization denied events [\#51](https://github.com/appfolio/ae_declarative_authorization/pull/51) ([jovan-appfolio](https://github.com/jovan-appfolio))
+
+## [v2.1.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.1) (2025-11-07)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.0...v2.1.1)
+
+## [v2.1.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.0) (2025-09-24)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.0.0...v2.1.0)
 
 **Merged pull requests:**
 
 - Configure NPM and Yarn to use custom NPM package repository [\#50](https://github.com/appfolio/ae_declarative_authorization/pull/50) ([appfolio-sourcegraph-batch-changes[bot]](https://github.com/apps/appfolio-sourcegraph-batch-changes))
 - \[APT-2440\] Authorization Denied Events [\#49](https://github.com/appfolio/ae_declarative_authorization/pull/49) ([jovan-appfolio](https://github.com/jovan-appfolio))
 - Upload test coverage reports to CircleCI [\#48](https://github.com/appfolio/ae_declarative_authorization/pull/48) ([andrewdt23](https://github.com/andrewdt23))
-
-## [v2.1.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.0) (2025-09-24)
-
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.0.0...v2.1.0)
 
 ## [v2.0.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.0.0) (2025-08-18)
 
