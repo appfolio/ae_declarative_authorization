@@ -1,13 +1,18 @@
-require 'rubygems'
+# frozen_string_literal: true
+
+ENV['RAILS_ENV'] = 'test'
+
 require 'bundler'
-require 'simplecov'
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
-  $stderr.puts e.message
-  $stderr.puts "Run `bundle install` to install missing gems"
+  warn e.message
+  warn 'Run `bundle install` to install missing gems'
   exit e.status_code
 end
+
+require 'simplecov'
 
 SimpleCov.start do
   add_filter "/test/"
@@ -17,12 +22,9 @@ SimpleCov.start do
 end
 
 require 'debug'
-require 'logger'
 require 'minitest/autorun'
 require 'minitest/reporters'
 require 'mocha/minitest'
-
-ENV['RAILS_ENV'] = 'test'
 
 require 'rails/all'
 require 'test_support/minitest_compatibility'

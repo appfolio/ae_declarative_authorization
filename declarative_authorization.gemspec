@@ -19,5 +19,5 @@ Gem::Specification.new do |spec|
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.add_dependency('blockenspiel', ['>= 0.5', '< 1'])
-  spec.add_dependency('rails', ['>= 7', '< 8.1'])
+  spec.add_dependency('rails', ['>= 7.2', '< 8.2'])
 end
