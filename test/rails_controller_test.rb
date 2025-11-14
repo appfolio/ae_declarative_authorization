@@ -230,7 +230,7 @@ class BasicControllerTest < ActionController::TestCase
     assert_equal "test_action_2", called_args[:action]
     assert_equal "/specific_mocks/test_action_2", called_args[:path]
     assert_equal false, called_args[:attribute_check_denial]
-    assert_equal nil, called_args[:referer]
+    assert_nil called_args[:referer]
   ensure
     Authorization.config.authorization_denied_callback = nil
   end
@@ -257,7 +257,7 @@ class BasicControllerTest < ActionController::TestCase
     assert_equal "test_action_2", called_args[:action]
     assert_equal "/specific_mocks/test_action_2", called_args[:path]
     assert_equal false, called_args[:attribute_check_denial]
-    assert_equal nil, called_args[:referer]
+    assert_nil called_args[:referer]
   ensure
     Authorization.config.authorization_denied_callback = nil
   end
