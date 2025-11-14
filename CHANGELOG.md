@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.1...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.2.0...HEAD)
 
 **Merged pull requests:**
 
-- \[APT-2584\] Add referrer to authorization denied events [\#51](https://github.com/appfolio/ae_declarative_authorization/pull/51) ([jovan-appfolio](https://github.com/jovan-appfolio))
+- \[BANK-1584\] Appraise `rails` 8.1 [\#52](https://github.com/appfolio/ae_declarative_authorization/pull/52) ([Maimer](https://github.com/Maimer))
+
+## [v2.2.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.2.0) (2025-11-14)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.1...v2.2.0)
 
 ## [v2.1.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.1) (2025-11-07)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.0...v2.1.1)
+
+**Merged pull requests:**
+
+- \[APT-2584\] Add referrer to authorization denied events [\#51](https://github.com/appfolio/ae_declarative_authorization/pull/51) ([jovan-appfolio](https://github.com/jovan-appfolio))
 
 ## [v2.1.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.0) (2025-09-24)
 
