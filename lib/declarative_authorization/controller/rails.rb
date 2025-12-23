@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/../authorization.rb'
 require File.dirname(__FILE__) + '/dsl.rb'
 require File.dirname(__FILE__) + '/runtime.rb'
+require File.dirname(__FILE__) + '/observability.rb'
 
 #
 # Mixin to be added to rails controllers
@@ -18,6 +19,7 @@ module Authorization
         end
 
         base.include Runtime
+        base.include Observability
       end
 
       module ClassMethods
@@ -280,7 +282,11 @@ module Authorization
       protected
 
       def filter_access_filter # :nodoc:
-        unless allowed?(action_name)
+        allowed = trace_authorization(controller: self.class.name, action: action_name) do
+          allowed?(action_name)
+        end
+
+        unless allowed
           if respond_to?(:permission_denied, true)
             # permission_denied needs to render or redirect
             send(:permission_denied)

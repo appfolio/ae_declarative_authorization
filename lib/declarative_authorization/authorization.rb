@@ -27,8 +27,13 @@ module Authorization
     # - event details (hash)
     attr_accessor :authorization_denied_callback
 
+    # Optional callback to wrap authorization check execution.
+    # Must return the result of executing the authorization check block.
+    attr_accessor :trace_authorization
+
     def initialize
       @authorization_denied_callback = nil
+      @trace_authorization = nil
     end
   end
 

@@ -575,3 +575,67 @@ class DeepNameSpacedControllerTest < ActionController::TestCase
     assert !@controller.authorized?
   end
 end
+
+##################
+class ObservabilityMocksController < MocksController
+  filter_access_to :allowed_action
+  filter_access_to :denied_action
+  define_action_methods :allowed_action, :denied_action
+end
+
+class ObservabilityControllerTest < ActionController::TestCase
+  tests ObservabilityMocksController
+
+  def teardown
+    Authorization.config.trace_authorization = nil
+  end
+
+  def test_observability_callback_called_on_allowed_action
+    setup_trace_callback
+
+    request!(MockUser.new(:test_role), "allowed_action", observability_reader)
+    assert @controller.authorized?
+    assert_equal 'ObservabilityMocksController', @callback_context[:controller]
+    assert_equal 'allowed_action', @callback_context[:action]
+    assert_equal true, @callback_result
+  end
+
+  def test_observability_callback_called_on_denied_action
+    setup_trace_callback
+
+    request!(MockUser.new(:test_role), "denied_action", observability_reader)
+    assert !@controller.authorized?
+    assert_equal 'ObservabilityMocksController', @callback_context[:controller]
+    assert_equal 'denied_action', @callback_context[:action]
+    assert_equal false, @callback_result
+  end
+
+  def test_filter_works_without_trace_callback
+    request!(MockUser.new(:test_role), "allowed_action", observability_reader)
+    assert @controller.authorized?
+
+    request!(MockUser.new(:test_role), "denied_action", observability_reader)
+    assert !@controller.authorized?
+  end
+
+  private
+
+  def setup_trace_callback
+    Authorization.config.trace_authorization = lambda { |context, &block|
+      @callback_context = context
+      @callback_result = block.call
+    }
+  end
+
+  def observability_reader
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :test_role do
+          has_permission_on :observability_mocks, :to => :allowed_action
+        end
+      end
+    }
+    reader
+  end
+end
