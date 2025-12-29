@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.2.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.0...HEAD)
 
 **Merged pull requests:**
 
-- \[BANK-1584\] Appraise `rails` 8.1 [\#52](https://github.com/appfolio/ae_declarative_authorization/pull/52) ([Maimer](https://github.com/Maimer))
+- APT-2638: add observability for auth checks [\#54](https://github.com/appfolio/ae_declarative_authorization/pull/54) ([dannyeldridge](https://github.com/dannyeldridge))
+
+## [v2.3.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.0) (2025-12-29)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.2.0...v2.3.0)
 
 ## [v2.2.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.2.0) (2025-11-14)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.1.1...v2.2.0)
+
+**Merged pull requests:**
+
+- \[BANK-1584\] Appraise `rails` 8.1 [\#52](https://github.com/appfolio/ae_declarative_authorization/pull/52) ([Maimer](https://github.com/Maimer))
 
 ## [v2.1.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.1.1) (2025-11-07)
 
