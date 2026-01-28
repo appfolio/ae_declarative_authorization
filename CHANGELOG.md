@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.0...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.1...HEAD)
 
 **Merged pull requests:**
 
-- APT-2638: add observability for auth checks [\#54](https://github.com/appfolio/ae_declarative_authorization/pull/54) ([dannyeldridge](https://github.com/dannyeldridge))
+- \[APT-2651\] Delegate helper methods to controller [\#53](https://github.com/appfolio/ae_declarative_authorization/pull/53) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
+
+## [v2.3.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.1) (2026-01-28)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.0...v2.3.1)
 
 ## [v2.3.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.0) (2025-12-29)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.2.0...v2.3.0)
+
+**Merged pull requests:**
+
+- APT-2638: add observability for auth checks [\#54](https://github.com/appfolio/ae_declarative_authorization/pull/54) ([dannyeldridge](https://github.com/dannyeldridge))
 
 ## [v2.2.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.2.0) (2025-11-14)
 
