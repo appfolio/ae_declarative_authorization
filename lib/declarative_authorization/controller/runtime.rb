@@ -14,6 +14,7 @@ module Authorization
       def self.failed_auto_loading_is_not_found?
         @@failed_auto_loading_is_not_found
       end
+
       def self.failed_auto_loading_is_not_found=(new_value)
         @@failed_auto_loading_is_not_found = new_value
       end
@@ -28,11 +29,27 @@ module Authorization
       # in the authorization rules are only evaluated if an object is given
       # for context.
       #
-      # See examples for Authorization::AuthorizationHelper #permitted_to?
-      #
       # If no object or context is specified, the controller_name is used as
       # context.
       #
+      # Examples:
+      #     <% permitted_to? :create, :users do %>
+      #     <%= link_to 'New', new_user_path %>
+      #     <% end %>
+      #     ...
+      #     <% if permitted_to? :create, :users %>
+      #     <%= link_to 'New', new_user_path %>
+      #     <% else %>
+      #     You are not allowed to create new users!
+      #     <% end %>
+      #     ...
+      #     <% for user in @users %>
+      #     <%= link_to 'Edit', edit_user_path(user) if permitted_to? :update, user %>
+      #     <% end %>
+      #
+      # To pass in an object and override the context, you can use the optional
+      # options:
+      #     permitted_to? :update, user, :context => :account
       def permitted_to?(privilege, object_or_sym = nil, options = {})
         if authorization_engine.permit!(privilege, options_for_permit(object_or_sym, options, false))
           yield if block_given?
@@ -48,16 +65,27 @@ module Authorization
         authorization_engine.permit!(privilege, options_for_permit(object_or_sym, options, true))
       end
 
-      # While permitted_to? is used for authorization, in some cases
+      # While permitted_to? is used for authorization in views, in some cases
       # content should only be shown to some users without being concerned
       # with authorization.  E.g. to only show the most relevant menu options
       # to a certain group of users.  That is what has_role? should be used for.
+      #
+      # Examples:
+      #     <% has_role?(:sales) do %>
+      #     <%= link_to 'All contacts', contacts_path %>
+      #     <% end %>
+      #     ...
+      #     <% if has_role?(:sales) %>
+      #     <%= link_to 'Customer contacts', contacts_path %>
+      #     <% else %>
+      #     ...
+      #     <% end %>
       def has_role?(*roles)
         user_roles = authorization_engine.roles_for(current_user)
         result = roles.all? do |role|
           user_roles.include?(role)
         end
-        yield if result and block_given?
+        yield if result && block_given?
         result
       end
 
@@ -68,7 +96,7 @@ module Authorization
         result = roles.any? do |role|
           user_roles.include?(role)
         end
-        yield if result and block_given?
+        yield if result && block_given?
         result
       end
 
@@ -78,7 +106,7 @@ module Authorization
         result = roles.all? do |role|
           user_roles.include?(role)
         end
-        yield if result and block_given?
+        yield if result && block_given?
         result
       end
 
@@ -88,7 +116,7 @@ module Authorization
         result = roles.any? do |role|
           user_roles.include?(role)
         end
-        yield if result and block_given?
+        yield if result && block_given?
         result
       end
 
@@ -96,16 +124,18 @@ module Authorization
         context = object = nil
         if object_or_sym.nil?
           context = decl_auth_context
-        elsif !Authorization.is_a_association_proxy?(object_or_sym) and object_or_sym.is_a?(Symbol)
+        elsif !Authorization.is_a_association_proxy?(object_or_sym) && object_or_sym.is_a?(Symbol)
           context = object_or_sym
         else
           object = object_or_sym
         end
 
-        result = {:object => object,
-          :context => context,
-          :skip_attribute_test => object.nil?,
-          :bang => bang}.merge(options)
+        result = {
+          object: object,
+          context: context,
+          skip_attribute_test: object.nil?,
+          bang: bang
+        }.merge(options)
         result[:user] = current_user unless result.key?(:user)
         result
       end
@@ -120,12 +150,12 @@ module Authorization
 
         begin
           allowed = if matching_permissions.any?
-            matching_permissions.all? { |p| p.permit!(self, action_name) }
-          elsif all_permissions.any?
-            all_permissions.all? { |p| p.permit!(self, action_name) }
-          else
-            !DEFAULT_DENY
-          end
+                      matching_permissions.all? { |p| p.permit!(self, action_name) }
+                    elsif all_permissions.any?
+                      all_permissions.all? { |p| p.permit!(self, action_name) }
+                    else
+                      !DEFAULT_DENY
+                    end
         rescue ::Authorization::NotAuthorized => e
           auth_exception = e
         end
