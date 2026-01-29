@@ -13,7 +13,7 @@ class TestApp
     config.active_support.deprecation = :stderr
     config.paths['config/database']   = File.expand_path('../../database.yml', __FILE__)
     config.active_support.test_order  = :random
-    config.active_record.legacy_connection_handling = false if Rails.version >= '7'
+    config.active_record.legacy_connection_handling = false if Rails.version.start_with? '7.0'
     initialize!
   end
 end
