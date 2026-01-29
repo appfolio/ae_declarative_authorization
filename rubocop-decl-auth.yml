@@ -1,0 +1,7 @@
+require:
+  - ./lib/rubocop/cop/decl_auth/before_actions_precede_access_filter
+
+DeclAuth/BeforeActionsPrecedeAccessFilter:
+  Enabled: true
+  Include:
+      - '**/controllers/**/*controller.rb'

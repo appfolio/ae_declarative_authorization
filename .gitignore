@@ -1,32 +1,14 @@
-# Because this is a gem, ignore Gemfile.lock:
+/.bundle/
+/coverage/
+/pkg/
+/tmp/
+/test/profiles/
+.coverage
 
+# Only generate Appraisal gemfiles on CI
+/gemfiles/
+
+# Ignore generated files
 Gemfile.lock
-gemfiles/*.gemfile.lock
-
-# And because this is Ruby, ignore the following
-# (source: https://github.com/github/gitignore/blob/master/Ruby.gitignore):
-
+*.log
 *.gem
-*.rbc
-.bundle
-.config
-coverage
-InstalledFiles
-lib/bundler/man
-pkg
-log
-rdoc
-spec/reports
-test/test.log
-test/tmp
-test/version_tmp
-test/test_app/log
-tmp
-test/profiles
-
-# YARD artifacts
-.yardoc
-_yardoc
-doc/
-
-.idea

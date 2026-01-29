@@ -23,6 +23,8 @@ module DeclarativeAuthorization
         end
 
         def allowed(options)
+          return unless @test_class.run_assertion?(options)
+
           role, privileges, actions, params_name = extract_options(options)
 
           actions.each do |action|
@@ -38,6 +40,8 @@ module DeclarativeAuthorization
         end
 
         def denied(options)
+          return unless @test_class.run_assertion?(options)
+
           role, privileges, actions, params_name = extract_options(options)
 
           actions.each do |action|
@@ -81,14 +85,16 @@ module DeclarativeAuthorization
         def privilege(privilege, &block)
           privileges = [privilege].flatten.uniq
 
-          unless privileges.all? { |privilege| [:hidden, :read, :write, :write_without_delete].include?(privilege) }
-            raise "Privilege (:when) must be :hidden, :read, :write_without_delete, or :write. Found #{privilege.inspect}."
+          unless privileges.all? { |privilege| [:granted, :hidden, :read, :write, :write_without_delete].include?(privilege) }
+            raise "Privilege (:when) must be :granted, :hidden, :read, :write_without_delete, or :write. Found #{privilege.inspect}."
           end
 
           Blockenspiel.invoke(block, PrivilegeTestGenerator.new(@test_class, @role, privileges))
         end
 
         def allowed(options)
+          return unless @test_class.run_assertion?(options)
+
           if options[:when]
             privilege(options[:when]) { allowed(options) }
           else
@@ -97,6 +103,8 @@ module DeclarativeAuthorization
         end
 
         def denied(options)
+          return unless @test_class.run_assertion?(options)
+
           if options[:when]
             privilege(options[:when]) { denied(options) }
           else
@@ -119,22 +127,55 @@ module DeclarativeAuthorization
 
         def role(role, &block)
           raise "Role cannot be blank!" if role.blank?
-          Blockenspiel.invoke(block, RoleTestGenerator.new(@test_class, role))
+
+          Blockenspiel.invoke(block, RoleTestGenerator.new(@test_class, role)) if @test_class.run_role_test?(role)
+        end
+      end
+
+      class AccessTestParser
+        include Blockenspiel::DSL
+
+        def initialize(test_class)
+          @test_class = test_class
         end
 
+        def params(_name, &_block);end
+
+        def role(role, &block)
+          Blockenspiel.invoke(block, self) if @test_class.run_role_test?(role)
+        end
+
+        def privilege(_privilege, &block)
+          Blockenspiel.invoke(block, self)
+        end
+
+        def allowed(options)
+          if options[:only]
+            @test_class.run_all_assertions = false
+          end
+        end
+
+        def denied(options)
+          if options[:only]
+            @test_class.run_all_assertions = false
+          end
+        end
       end
 
       module ClassMethods
-        attr_reader :access_tests_defined
+        attr_reader :access_tests_defined, :only_run_roles
+        attr_accessor :run_all_assertions
 
         def skip_access_tests_for_actions(*actions)
           @skipped_access_test_actions ||= []
           @skipped_access_test_actions += actions.map(&:to_sym)
         end
 
-        def access_tests(&block)
+        def access_tests(only_run_roles: nil, &block)
           @access_tests_defined = true
-          file_output ||= [ 'test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
+          @run_all_assertions = true
+          @only_run_roles = only_run_roles
+          file_output ||= [ Dir.tmpdir + '/test/profiles/access_checking', ENV['TEST_ENV_NUMBER'] ].compact.join('.')
           unless File.exist?(file_output)
             FileUtils.mkdir_p(File.dirname(file_output))
           end
@@ -142,6 +183,7 @@ module DeclarativeAuthorization
             file.puts self.controller_class.name
           end
 
+          Blockenspiel.invoke(block, AccessTestParser.new(self))
           Blockenspiel.invoke(block, AccessTestGenerator.new(self))
         end
 
@@ -190,6 +232,14 @@ module DeclarativeAuthorization
 
         def define_access_test_params_method(name, &block)
           define_method("access_test_params_for_#{name}", &block)
+        end
+
+        def run_role_test?(role)
+          @only_run_roles.nil? || @only_run_roles.include?(role)
+        end
+
+        def run_assertion?(assertion_options)
+          @run_all_assertions || assertion_options[:only]
         end
 
       end
@@ -248,15 +298,27 @@ module DeclarativeAuthorization
         errors_to_reraise << Mocha::ExpectationError if defined?(Mocha::ExpectationError)
 
         begin
+          if options[:debug]
+            puts "Debug: Sending request - role: #{role}, action: #{action}, privilege: #{privilege}, params: #{params.inspect}, http_method: #{http_method}, xhr: #{xhr}"
+          end
           send *send_args, **send_kwargs
+          if options[:debug]
+            puts "Debug: Response status: #{response.status}" if response.status
+            puts "Debug: flash[:error]: #{flash[:error]}" if flash[:error]
+            puts "Debug: flash[:alert]: #{flash[:alert]}" if flash[:alert]
+          end
           return response_forbidden?
         rescue *errors_to_reraise => e
           raise e
         rescue => e
-          if options[:print_error]
-            puts "\n#{e.class.name} raised in action '#{action}':"
-            puts e.message
-            puts e.backtrace.join("\n")
+          # Exceptions are expected from controllers as complete requests are not always made in access tests
+          if options[:debug]
+            puts "Debug: Exception raised from controller, not considered as an error for access tests as response is not coming from the declarative authorization framework."
+            puts "Debug: Response status: #{response.status}" if response.status
+            puts "Debug: flash[:error]: #{flash[:error]}" if flash[:error]
+            puts "Debug: flash[:alert]: #{flash[:alert]}" if flash[:alert]
+            puts "Debug: Exception: #{e.class} - #{e.message}"
+            puts e.backtrace.join("\n") if e.backtrace
           end
           return false
         end

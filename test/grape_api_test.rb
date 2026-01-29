@@ -171,6 +171,31 @@ if defined?(Grape)
 
       assert last_endpoint.permitted_to?(:test)
     end
+
+    def test_authorization_denied_callback_is_called_on_denial
+      called_args = nil
+      Authorization.config.authorization_denied_callback = proc do |details|
+        called_args = details
+      end
+      reader = Authorization::Reader::DSLReader.new
+      reader.parse %{
+        authorization do
+          role :test_role do
+            has_permission_on :permissions, :to => :test
+          end
+        end
+      }
+      # User does not have permission for test_action_2
+      request!(MockUser.new(:test_role), "/specific_mocks/test_action_2", reader)
+      assert !last_endpoint.authorized?
+      assert called_args, "authorization_denied_callback should have been called"
+      assert_equal "permissions_2", called_args[:context]
+      assert_equal "GET", called_args[:action]
+      assert_equal "/specific_mocks/test_action_2", called_args[:path]
+      assert_equal false, called_args[:attribute_check_denial]
+    ensure
+      Authorization.config.authorization_denied_callback = nil
+    end
   end
 
   ##################
@@ -509,6 +534,70 @@ if defined?(Grape)
       assert last_endpoint.authorized?
       request!(MockUser.new(:prohibited_role), "/deep/name_spaced/things/update", reader)
       assert !last_endpoint.authorized?
+    end
+  end
+
+  ##################
+  class ObservabilityMocksAPI < MocksAPI
+    filter_access_to 'GET /observability_mocks/allowed_action', :require => :allow, :context => :observability_mocks
+    filter_access_to 'GET /observability_mocks/denied_action', :require => :deny, :context => :observability_mocks
+    define_action_methods :allowed_action, :denied_action
+  end
+
+  class ObservabilityAPITest < ApiTestCase
+    tests ObservabilityMocksAPI
+
+    def teardown
+      Authorization.config.trace_authorization = nil
+    end
+
+    def test_observability_callback_called_on_allowed_action
+      setup_trace_callback
+
+      request!(MockUser.new(:test_role), "/observability_mocks/allowed_action", observability_reader)
+      assert last_endpoint.authorized?
+      assert_equal 'ObservabilityMocksAPI', @callback_context[:api]
+      assert_equal 'GET /observability_mocks/allowed_action', @callback_context[:action]
+      assert_equal true, @callback_result
+    end
+
+    def test_observability_callback_called_on_denied_action
+      setup_trace_callback
+
+      request!(MockUser.new(:test_role), "/observability_mocks/denied_action", observability_reader)
+      assert !last_endpoint.authorized?
+      assert_equal 'ObservabilityMocksAPI', @callback_context[:api]
+      assert_equal 'GET /observability_mocks/denied_action', @callback_context[:action]
+      assert_equal false, @callback_result
+    end
+
+    def test_filter_works_without_trace_callback
+      request!(MockUser.new(:test_role), "/observability_mocks/allowed_action", observability_reader)
+      assert last_endpoint.authorized?
+
+      request!(MockUser.new(:test_role), "/observability_mocks/denied_action", observability_reader)
+      assert !last_endpoint.authorized?
+    end
+
+    private
+
+    def setup_trace_callback
+      Authorization.config.trace_authorization = lambda { |context, &block|
+        @callback_context = context
+        @callback_result = block.call
+      }
+    end
+
+    def observability_reader
+      reader = Authorization::Reader::DSLReader.new
+      reader.parse %{
+        authorization do
+          role :test_role do
+            has_permission_on :observability_mocks, :to => :allow
+          end
+        end
+      }
+      reader
     end
   end
 end

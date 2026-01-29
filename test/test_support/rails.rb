@@ -1,19 +1,16 @@
 require DA_ROOT + File.join(%w{lib declarative_authorization controller rails})
 
-if Rails.version < '4.2'
-  raise "Unsupported Rails version #{Rails.version}"
-end
-
 puts "Testing against rails #{Rails::VERSION::STRING}"
 
 class TestApp
   class Application < ::Rails::Application
+    config.load_defaults "#{Rails::VERSION::MAJOR}.#{Rails::VERSION::MINOR}"
     config.eager_load                 = false
     config.secret_key_base            = 'testingpurposesonly'
     config.active_support.deprecation = :stderr
     config.paths['config/database']   = File.expand_path('../../database.yml', __FILE__)
     config.active_support.test_order  = :random
-    config.active_record.legacy_connection_handling = false if Rails.version.start_with? '7.0'
+    config.active_record.legacy_connection_handling = false if Rails.version >= '7' && Rails.version < '7.1'
     initialize!
   end
 end

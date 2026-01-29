@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/reader.rb'
 require "set"
 require "forwardable"
 require 'rails'
+require 'uri'
 
 module Authorization
   # An exception raised if anything goes wrong in the Authorization realm
@@ -20,6 +21,29 @@ module Authorization
   # NilAttributeValueError is raised by Attribute#validate? when it hits a nil attribute value.
   # The exception is raised to ensure that the entire rule is invalidated.
   class NilAttributeValueError < AuthorizationError; end
+
+  class Config
+    # A function that takes one argument:
+    # - event details (hash)
+    attr_accessor :authorization_denied_callback
+
+    # Optional callback to wrap authorization check execution.
+    # Must return the result of executing the authorization check block.
+    attr_accessor :trace_authorization
+
+    def initialize
+      @authorization_denied_callback = nil
+      @trace_authorization = nil
+    end
+  end
+
+  def self.config
+    @config ||= Config.new
+  end
+
+  def self.configure
+    yield config
+  end
 
   AUTH_DSL_FILES = [Pathname.new(Rails.root || '').join("config", "authorization_rules.rb").to_s] unless defined? AUTH_DSL_FILES
 
@@ -192,6 +216,28 @@ module Authorization
       end
 
       if options[:bang]
+        # Call authorization_denied_callback if configured
+        if Authorization.config.authorization_denied_callback
+          action = if options[:controller]&.respond_to?(:action_name)
+                     options[:controller].action_name
+                   elsif options[:controller]&.respond_to?(:route) # Grape API
+                     options[:controller].route&.request_method
+                   end
+
+          referer_url = options[:controller]&.respond_to?(:request) ? options[:controller].request&.referer : nil
+          referer_path = referer_url ? (URI.parse(referer_url).path rescue nil) : nil
+
+          Authorization.config.authorization_denied_callback.call(
+            {
+              action: action,
+              path: options[:controller]&.respond_to?(:request) ? options[:controller].request&.path : nil,
+              context: options[:context].to_s,
+              attribute_check_denial: !rules.empty?,
+              referer: referer_path
+            }
+          )
+        end
+
         if rules.empty?
           raise NotAuthorized, "No matching rules found for #{privilege} for User with id #{user.try(:id)} " +
             "(roles #{roles.inspect}, privileges #{privileges.inspect}, " +

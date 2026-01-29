@@ -1,16 +1,30 @@
-require 'rubygems'
+# frozen_string_literal: true
+
+ENV['RAILS_ENV'] = 'test'
+
 require 'bundler'
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
-  $stderr.puts e.message
-  $stderr.puts "Run `bundle install` to install missing gems"
+  warn e.message
+  warn 'Run `bundle install` to install missing gems'
   exit e.status_code
 end
 
-require 'minitest/autorun'
+require 'simplecov'
 
-ENV['RAILS_ENV'] = 'test'
+SimpleCov.start do
+  add_filter "/test/"
+  enable_coverage :branch
+  minimum_coverage line: 91, branch: 76
+  coverage_dir '.coverage'
+end
+
+require 'debug'
+require 'minitest/autorun'
+require 'minitest/reporters'
+require 'mocha/minitest'
 
 require 'rails/all'
 require 'test_support/minitest_compatibility'
@@ -20,6 +34,14 @@ DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 require DA_ROOT + File.join(%w{lib declarative_authorization test helpers})
+
+Mocha.configure do |config|
+  config.stubbing_non_existent_method = :prevent
+  config.strict_keyword_argument_matching = true
+end
+
+Minitest::Test.make_my_diffs_pretty!
+Minitest::Reporters.use! unless ENV['RM_INFO']
 
 class MockDataObject
   def initialize(attrs = {})
@@ -75,6 +97,12 @@ module Test
   module Unit
     class TestCase < Minitest::Test
       include Authorization::TestHelper
+
+      def setup
+        ActiveRecord::Base.descendants.each do |model|
+          model.delete_all unless model.abstract_class? || !model.table_exists?
+        end
+      end
     end
   end
 end
@@ -94,11 +122,7 @@ module ActiveSupport
 
       method = params.delete(:method) || :get
 
-      if Rails.version >= '5.0'
-        send method, action, params: params
-      else
-        send method, action, params
-      end
+      send method, action, params: params
     end
 
     def setup

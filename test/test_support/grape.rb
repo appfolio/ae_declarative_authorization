@@ -1,6 +1,11 @@
 require 'grape'
 require 'mocha/minitest'
 
+Mocha.configure do |config|
+  config.stubbing_non_existent_method = :prevent
+  config.strict_keyword_argument_matching = true
+end
+
 require DA_ROOT + File.join(%w{lib declarative_authorization controller grape})
 
 class ApiTestCase < ActiveSupport::TestCase

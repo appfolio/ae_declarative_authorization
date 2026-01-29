@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/../authorization.rb'
 require File.dirname(__FILE__) + '/dsl.rb'
 require File.dirname(__FILE__) + '/runtime.rb'
+require File.dirname(__FILE__) + '/observability.rb'
 
 #
 # This mixin can be used to add declarative authorization support to APIs built using Grape
@@ -31,6 +32,7 @@ module Authorization
 
         base.helpers do
           include ::Authorization::Controller::Runtime
+          include ::Authorization::Controller::Observability
 
           def authorization_engine
             ::Authorization::Engine.instance
@@ -43,7 +45,14 @@ module Authorization
               # Acceessing route raises an exception when the response is a 405 MethodNotAllowed
               return
             end
-            unless allowed?("#{request.request_method} #{route.origin}")
+
+            action = "#{request.request_method} #{route.origin}"
+
+            allowed = trace_authorization(api: api_class&.name, action: action) do
+              allowed?(action)
+            end
+
+            unless allowed
               if respond_to?(:permission_denied, true)
                 # permission_denied needs to render or redirect
                 send(:permission_denied)
