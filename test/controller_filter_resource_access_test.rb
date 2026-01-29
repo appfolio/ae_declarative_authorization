@@ -468,6 +468,90 @@ class AdditionalMembersCollectionsResourceControllerTest < ActionController::Tes
   end
 end
 
+class AdditionalMembersCollectionsStrongParamsController < MocksController
+  def self.controller_name
+    "basic_resources"
+  end
+  filter_resource_access :additional_member => :other_show,
+                         :additional_collection => [:search], :additional_new => {:other_new => :new}, :strong_parameters => true
+  define_resource_actions
+  define_action_methods :other_new, :search, :other_show
+end
+class AdditionalMembersCollectionsStrongParamsControllerTest < ActionController::TestCase
+  def test_additional_members_filter_search_index
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :allowed_role do
+          has_permission_on :basic_resources, :to => [:search, :index] do
+            if_attribute :id => is {"1"}
+          end
+        end
+      end
+    }
+
+    request!(MockUser.new(:another_role), :search, reader)
+    assert !@controller.authorized?
+    request!(MockUser.new(:another_role), :index, reader)
+    assert !@controller.authorized?
+    request!(MockUser.new(:allowed_role), :search, reader)
+    assert @controller.authorized?
+    request!(MockUser.new(:allowed_role), :index, reader)
+    assert @controller.authorized?
+  end
+
+  def test_additional_members_filter_other_show
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :allowed_role do
+          has_permission_on :basic_resources, :to => [:show, :other_show] do
+            if_attribute :id => is {"1"}
+          end
+        end
+      end
+    }
+
+    allowed_user = MockUser.new(:allowed_role)
+    request!(allowed_user, :other_show, reader, :id => "2")
+    assert !@controller.authorized?
+    request!(allowed_user, :show, reader, :id => "2", :clear => [:@basic_resource])
+    assert !@controller.authorized?
+    request!(allowed_user, :other_show, reader, :id => "1", :clear => [:@basic_resource])
+    assert @controller.authorized?
+    request!(allowed_user, :show, reader, :id => "1", :clear => [:@basic_resource])
+    assert @controller.authorized?
+  end
+
+  def test_additional_members_filter_other_new
+    reader = Authorization::Reader::DSLReader.new
+    reader.parse %{
+      authorization do
+        role :allowed_role do
+          has_permission_on :basic_resources, :to => :new do
+            if_attribute :id => is {"1"}
+          end
+        end
+      end
+    }
+
+    allowed_user = MockUser.new(:allowed_role)
+    request!(allowed_user, :other_new, reader, :basic_resource => {:id => "2"})
+    assert !@controller.authorized?
+    request!(allowed_user, :new, reader, :basic_resource => {:id => "2"},
+             :clear => [:@basic_resource])
+    assert !@controller.authorized?
+
+    # strong_parameters (as mocked) never set parameters on new object, so attribute condition is never met
+    request!(allowed_user, :other_new, reader, :basic_resource => {:id => "1"},
+             :clear => [:@basic_resource])
+    assert !@controller.authorized?
+    request!(allowed_user, :new, reader, :basic_resource => {:id => "1"},
+             clear: [:@basic_resource])
+    assert !@controller.authorized?
+  end
+end
+
 
 class CustomMethodsResourceController < MocksController
   # not implemented yet
