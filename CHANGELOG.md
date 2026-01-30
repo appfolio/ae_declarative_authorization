@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.1...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.2...HEAD)
 
 **Merged pull requests:**
 
-- \[APT-2651\] Delegate helper methods to controller [\#53](https://github.com/appfolio/ae_declarative_authorization/pull/53) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
+- Allow additional members and collections with strong parameters [\#55](https://github.com/appfolio/ae_declarative_authorization/pull/55) ([mameier](https://github.com/mameier))
+
+## [v2.3.2](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.2) (2026-01-30)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.1...v2.3.2)
 
 ## [v2.3.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.1) (2026-01-28)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.0...v2.3.1)
+
+**Merged pull requests:**
+
+- \[APT-2651\] Delegate helper methods to controller [\#53](https://github.com/appfolio/ae_declarative_authorization/pull/53) ([mike-mike-mike-mike-mike](https://github.com/mike-mike-mike-mike-mike))
 
 ## [v2.3.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.0) (2025-12-29)
 
