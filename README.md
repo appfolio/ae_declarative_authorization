@@ -13,6 +13,7 @@ the changes have to be implemented, possibly leading to omissions and thus hard
 to find errors. In these cases, a declarative approach as offered by decl_auth
 increases the development and maintenance efficiency.
 
+fake test commit change
 
 Plugin features
 * Authorization at controller action level
