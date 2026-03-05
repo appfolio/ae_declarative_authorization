@@ -12,10 +12,10 @@ Gem::Specification.new do |spec|
   spec.summary       = spec.description
   spec.homepage      = 'https://github.com/appfolio/ae_declarative_authorization'
   spec.license       = 'MIT'
-  spec.files         = Dir['**/*'].select { |f| f[%r{^(lib/|LICENSE.txt|.*gemspec|README.md|rubocop-decl-auth.yml)}] }
+  spec.files         = Dir['**/*'].select { |f| f[%r{^(lib/|LICENSE.txt|declarative_authorization\.gemspec|README.md|rubocop-decl-auth.yml)}] }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = Gem::Requirement.new('< 3.5')
+  spec.required_ruby_version = Gem::Requirement.new('< 4.1')
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.add_dependency('blockenspiel', ['>= 0.5', '< 1'])

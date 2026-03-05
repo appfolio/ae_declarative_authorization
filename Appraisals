@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-case RUBY_VERSION
-when '3.2.5', '3.3.6', '3.4.1'
+if Gem::Requirement.new(['>= 3.3', '< 4.1']).satisfied_by?(Gem::Version.new(RUBY_VERSION))
   ['7.2'].product(['1.6', '1.7', '1.8', '2.0', '2.1', '2.2']).each do |rails_version, grape_version|
     appraise "ruby-#{RUBY_VERSION}-rails_#{rails_version}-grape_#{grape_version}_sqlite1" do
       source 'https://rubygems.org' do
