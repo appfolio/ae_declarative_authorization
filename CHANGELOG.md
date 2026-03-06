@@ -2,15 +2,23 @@
 
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
-[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.2...HEAD)
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.4.0...HEAD)
 
 **Merged pull requests:**
 
-- Allow additional members and collections with strong parameters [\#55](https://github.com/appfolio/ae_declarative_authorization/pull/55) ([mameier](https://github.com/mameier))
+- \[BANK-1738\] Update supported Ruby versions to 3.3.10, 3.4.8, 4.0.1 [\#57](https://github.com/appfolio/ae_declarative_authorization/pull/57) ([Maimer](https://github.com/Maimer))
+
+## [v2.4.0](https://github.com/appfolio/ae_declarative_authorization/tree/v2.4.0) (2026-03-06)
+
+[Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.2...v2.4.0)
 
 ## [v2.3.2](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.2) (2026-01-30)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.3.1...v2.3.2)
+
+**Merged pull requests:**
+
+- Allow additional members and collections with strong parameters [\#55](https://github.com/appfolio/ae_declarative_authorization/pull/55) ([mameier](https://github.com/mameier))
 
 ## [v2.3.1](https://github.com/appfolio/ae_declarative_authorization/tree/v2.3.1) (2026-01-28)
 
