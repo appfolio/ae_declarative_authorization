@@ -378,6 +378,54 @@ if defined?(Grape)
   end
 
   ##################
+  class PatchOnlyMocks < MocksAPI
+    filter_access_to :all
+
+    resources :patch_only_mocks do
+      patch do
+        @authorized = true
+        'nothing'
+      end
+    end
+  end
+
+  class WrongHttpMethodAPITest < ApiTestCase
+    tests PatchOnlyMocks
+
+    def test_wrong_http_method_returns_405_not_403
+      reader = Authorization::Reader::DSLReader.new
+      request!(MockUser.new(:test_role), '/patch_only_mocks', reader, method: :get)
+      assert_equal 405, last_response.status
+    end
+
+    def test_correct_method_without_auth_rule_returns_403
+      reader = Authorization::Reader::DSLReader.new
+      request!(MockUser.new(:test_role), '/patch_only_mocks', reader, method: :patch)
+      assert_equal 403, last_response.status
+    end
+
+    def test_correct_method_with_auth_rule_is_allowed
+      reader = Authorization::Reader::DSLReader.new
+      reader.parse %{
+        authorization do
+          role :test_role do
+            has_permission_on :patch_only_mocks, :to => 'PATCH /patch_only_mocks'
+          end
+        end
+      }
+      request!(MockUser.new(:test_role), '/patch_only_mocks', reader, method: :patch)
+      assert last_endpoint.authorized?
+    end
+
+    def test_wrong_http_method_includes_allow_header
+      reader = Authorization::Reader::DSLReader.new
+      request!(MockUser.new(:test_role), '/patch_only_mocks', reader, method: :get)
+      assert_equal 405, last_response.status
+      assert_includes last_response.headers['Allow'], 'PATCH'
+    end
+  end
+
+  ##################
   class AccessOverwrites < MocksAPI
     filter_access_to 'GET /access_overwrites/test_action', 'GET /access_overwrites/test_action_2',
       :require => :test, :context => :permissions_2

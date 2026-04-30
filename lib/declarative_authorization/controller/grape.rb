@@ -39,11 +39,13 @@ module Authorization
           end
 
           def filter_access_filter # :nodoc:
-            begin
-              route
-            rescue
-              # Acceessing route raises an exception when the response is a 405 MethodNotAllowed
-              return
+            raw = env[::Grape::Env::GRAPE_ALLOWED_METHODS]
+            if raw
+              allowed_methods = raw.is_a?(Array) ? raw : raw.split(/,\s*/)
+              if !allowed_methods.include?(request.request_method)
+                header['Allow'] = allowed_methods.join(', ')
+                raise ::Grape::Exceptions::MethodNotAllowed.new(header)
+              end
             end
 
             action = "#{request.request_method} #{route.origin}"
