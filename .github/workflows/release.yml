@@ -5,6 +5,10 @@ on:
     branches:
       - main
       - master
+    paths:
+      - 'lib/**'
+      - 'declarative_authorization.gemspec'
+      - 'LICENSE.txt'
 
 permissions:
   contents: write
