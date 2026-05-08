@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.4.1](https://github.com/appfolio/ae_declarative_authorization/compare/v2.4.0...v2.4.1) (2026-05-08)
+
+
+### Documentation
+
+* update changelog ([859871a](https://github.com/appfolio/ae_declarative_authorization/commit/859871a21105ee5e7a2b629c36b79066526c5990))
+
+
+### Miscellaneous Chores
+
+* migrate npm registry from CodeArtifact to JFrog ([94411ba](https://github.com/appfolio/ae_declarative_authorization/commit/94411ba10955247ffbc0b172d4b01fe8a200ce83))
+* migrate npm registry from CodeArtifact to JFrog ([e5dc828](https://github.com/appfolio/ae_declarative_authorization/commit/e5dc8284d14c8c4ebdae4c250079eeaa2c3ceeb7))
+* remove some whitespace to test release ([4712823](https://github.com/appfolio/ae_declarative_authorization/commit/4712823b2cc3ae338683e66e1ac7bfc77490454d))
+
+
+### Continuous Integration
+
+* add id-token permission for OIDC trusted publishing ([790c788](https://github.com/appfolio/ae_declarative_authorization/commit/790c78896b3082eb8fa76a0308a1fd5b18dffdc5))
+* add id-token permission for OIDC trusted publishing ([67846be](https://github.com/appfolio/ae_declarative_authorization/commit/67846bed5a47b15dab5641a3646f431b603fcfb4))
+* add Release Please and gem-releaser workflows for automated releases ([ba9223b](https://github.com/appfolio/ae_declarative_authorization/commit/ba9223b22f83969d0afadfeabba524c5719d8932))
+* add Release Please and gem-releaser workflows for automated releases ([d5d7da4](https://github.com/appfolio/ae_declarative_authorization/commit/d5d7da47253265c1808a044bd2697df91f51960f))
+* scope release-please to gem-shipped files ([4b50f9d](https://github.com/appfolio/ae_declarative_authorization/commit/4b50f9d76c7ebee2fffd4f9513b0c62d0a237063))
+
 ## [Unreleased](https://github.com/appfolio/ae_declarative_authorization/tree/HEAD)
 
 [Full Changelog](https://github.com/appfolio/ae_declarative_authorization/compare/v2.4.0...HEAD)
