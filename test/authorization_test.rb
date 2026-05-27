@@ -329,10 +329,11 @@ class AuthorizationTest < Test::Unit::TestCase
       end
     )
     engine = Authorization::Engine.new(reader)
-    Authorization.stub :current_user, MockUser.new do
-      assert engine.permit?(:test, context: :permissions)
-      assert !engine.permit?(:test, context: :permissions_2)
-    end
+    Authorization.stubs(:current_user).returns(MockUser.new)
+    assert engine.permit?(:test, context: :permissions)
+    assert !engine.permit?(:test, context: :permissions_2)
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_default_role
@@ -344,14 +345,16 @@ class AuthorizationTest < Test::Unit::TestCase
         end
       end
     )
-    Authorization.stub :default_role, :anonymous do
-      engine = Authorization::Engine.new(reader)
-      Authorization.stub :current_user, MockUser.new do
-        assert engine.permit?(:test, context: :permissions)
-      end
-      assert !engine.permit?(:test, context: :permissions,
-                                    user: MockUser.new(:guest))
-    end
+    Authorization.stubs(:default_role).returns(:anonymous)
+    engine = Authorization::Engine.new(reader)
+    Authorization.stubs(:current_user).returns(MockUser.new)
+    assert engine.permit?(:test, context: :permissions)
+    Authorization.unstub(:current_user)
+    assert !engine.permit?(:test, context: :permissions,
+                                  user: MockUser.new(:guest))
+  ensure
+    Authorization.unstub(:default_role)
+    Authorization.unstub(:current_user)
   end
 
   def test_invalid_user_model
@@ -1149,14 +1152,15 @@ class AuthorizationTest < Test::Unit::TestCase
     )
 
     engine = Authorization::Engine.new(reader)
-    Authorization.stub :current_user, MockUser.new(:test_role) do
-      assert engine.permit?(:test, context: :permissions)
-      Thread.new do
-        Authorization.current_user = MockUser.new(:test_role2)
-        assert !engine.permit?(:test, context: :permissions)
-      end
-      assert engine.permit?(:test, context: :permissions)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
+    assert engine.permit?(:test, context: :permissions)
+    Thread.new do
+      Authorization.current_user = MockUser.new(:test_role2)
+      assert !engine.permit?(:test, context: :permissions)
     end
+    assert engine.permit?(:test, context: :permissions)
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_clone
