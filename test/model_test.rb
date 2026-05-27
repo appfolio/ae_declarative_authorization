@@ -1318,17 +1318,18 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.stub :current_user, MockUser.new(:test_role) do
-      assert(object = TestModelSecurityModel.create)
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
+    assert(object = TestModelSecurityModel.create)
 
-      assert_nothing_raised { object.update(:attr_2 => 2) }
-      object.reload
-      assert_equal 2, object.attr_2
-      object.destroy
-      assert_raise ActiveRecord::RecordNotFound do
-        TestModelSecurityModel.find(object.id)
-      end
+    assert_nothing_raised { object.update(:attr_2 => 2) }
+    object.reload
+    assert_equal 2, object.attr_2
+    object.destroy
+    assert_raise ActiveRecord::RecordNotFound do
+      TestModelSecurityModel.find(object.id)
     end
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_write_not_allowed_no_privilege
@@ -1375,24 +1376,25 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.stub :current_user, MockUser.new(:test_role) do
-      assert(object = TestModelSecurityModel.create)
-      assert_raise Authorization::AttributeAuthorizationError do
-        TestModelSecurityModel.create :attr => 2
-      end
-      object = TestModelSecurityModel.create
-      assert_raise Authorization::AttributeAuthorizationError do
-        object.update(:attr => 2)
-      end
-      object.reload
-
-      assert_nothing_raised do
-        object.update(:attr_2 => 1)
-      end
-      assert_raise Authorization::AttributeAuthorizationError do
-        object.update(:attr => 2)
-      end
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role))
+    assert(object = TestModelSecurityModel.create)
+    assert_raise Authorization::AttributeAuthorizationError do
+      TestModelSecurityModel.create :attr => 2
     end
+    object = TestModelSecurityModel.create
+    assert_raise Authorization::AttributeAuthorizationError do
+      object.update(:attr => 2)
+    end
+    object.reload
+
+    assert_nothing_raised do
+      object.update(:attr_2 => 1)
+    end
+    assert_raise Authorization::AttributeAuthorizationError do
+      object.update(:attr => 2)
+    end
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_with_and_without_find_restrictions
@@ -1442,13 +1444,14 @@ class ModelTest < Test::Unit::TestCase
     Authorization::Engine.instance(reader)
 
     test_attr = TestAttr.create
-    Authorization.stub :current_user, MockUser.new(:test_role, :test_attr => test_attr) do
-      object_with_find = TestModelSecurityModelWithFind.create :test_attr => test_attr
-      assert_nothing_raised do
-        object_with_find.class.find(object_with_find.id)
-      end
-      assert_equal 1, test_attr.test_model_security_model_with_finds.length
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role, :test_attr => test_attr))
+    object_with_find = TestModelSecurityModelWithFind.create :test_attr => test_attr
+    assert_nothing_raised do
+      object_with_find.class.find(object_with_find.id)
     end
+    assert_equal 1, test_attr.test_model_security_model_with_finds.length
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_delete_unallowed
@@ -1497,9 +1500,10 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.stub :current_user, MockUser.new(:test_role_unrestricted) do
-      object = TestModelSecurityModel.create :attr => 2
-    end
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role_unrestricted))
+    object = TestModelSecurityModel.create :attr => 2
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_no_role_unallowed
@@ -1510,11 +1514,12 @@ class ModelTest < Test::Unit::TestCase
     }
     Authorization::Engine.instance(reader)
 
-    Authorization.stub :current_user, MockUser.new(:test_role_2) do
-      assert_raise Authorization::NotAuthorized do
-        TestModelSecurityModel.create
-      end
+    Authorization.stubs(:current_user).returns(MockUser.new(:test_role_2))
+    assert_raise Authorization::NotAuthorized do
+      TestModelSecurityModel.create
     end
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_with_assoc
@@ -1533,20 +1538,21 @@ class ModelTest < Test::Unit::TestCase
 
     test_attr = TestAttr.create
     test_attr.role_symbols << :test_role
-    Authorization.stub :current_user, test_attr do
-      assert(object = TestModelSecurityModel.create(:test_attrs => [test_attr]))
-      assert_nothing_raised do
-        object.update(:attr_2 => 2)
-      end
-      without_access_control do
-        object.reload
-      end
-      assert_equal 2, object.attr_2
-      object.destroy
-      assert_raise ActiveRecord::RecordNotFound do
-        TestModelSecurityModel.find(object.id)
-      end
+    Authorization.stubs(:current_user).returns(test_attr)
+    assert(object = TestModelSecurityModel.create(:test_attrs => [test_attr]))
+    assert_nothing_raised do
+      object.update(:attr_2 => 2)
     end
+    without_access_control do
+      object.reload
+    end
+    assert_equal 2, object.attr_2
+    object.destroy
+    assert_raise ActiveRecord::RecordNotFound do
+      TestModelSecurityModel.find(object.id)
+    end
+  ensure
+    Authorization.unstub(:current_user)
   end
 
   def test_model_security_with_update_attrbributes
