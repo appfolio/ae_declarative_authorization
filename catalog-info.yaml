@@ -7,7 +7,7 @@ metadata:
   tags:
     - oss
   annotations:
-    appfolio.com/package-location: url:https://rubygems.org/gems/ae_declarative_authorization
+    appfolio.com/package-location: url:https://appfolio.jfrog.io/artifactory/api/gems/appfolio-ae_declarative_authorization-gem/
     appfolio.com/package-type: gem
   name: ae-declarative-authorization
 spec:
