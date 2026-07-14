@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.platform      = Gem::Platform::RUBY
   spec.author        = 'AppFolio'
   spec.email         = 'opensource@appfolio.com'
-  spec.description   = 'Rails gem for maintainable authorization based on readable authorization rules.'
-  spec.summary       = spec.description
+  spec.description   = 'Provides an authorization mechanism for Rails applications inspired by role-based access control (RBAC). Authorization is defined through readable rules that map roles to permitted actions, making access control easier to maintain.'
+  spec.summary       = 'Rails gem for maintainable authorization based on readable authorization rules.'
   spec.homepage      = 'https://github.com/appfolio/ae_declarative_authorization'
   spec.license       = 'MIT'
   spec.files         = Dir['**/*'].select { |f| f[%r{^(lib/|LICENSE.txt|declarative_authorization\.gemspec|README.md|rubocop-decl-auth.yml)}] }
