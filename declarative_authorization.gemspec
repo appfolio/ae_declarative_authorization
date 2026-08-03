@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.required_ruby_version = Gem::Requirement.new('< 4.1')
-  spec.metadata['allowed_push_host'] = 'https://appfolio.jfrog.io/artifactory/api/gems/appfolio-ae_declarative_authorization-gem/'
+  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.add_dependency('blockenspiel', ['>= 0.5', '< 1'])
   spec.add_dependency('rails', ['>= 7.2', '< 8.2'])
