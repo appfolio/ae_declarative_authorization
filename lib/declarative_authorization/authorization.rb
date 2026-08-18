@@ -2,7 +2,7 @@
 require File.dirname(__FILE__) + '/reader.rb'
 require "set"
 require "forwardable"
-require 'rails'
+require 'active_support'
 require 'uri'
 
 module Authorization
@@ -45,7 +45,7 @@ module Authorization
     yield config
   end
 
-  AUTH_DSL_FILES = [Pathname.new(Rails.root || '').join("config", "authorization_rules.rb").to_s] unless defined? AUTH_DSL_FILES
+  AUTH_DSL_FILES = [Pathname.new(defined?(::Rails) && ::Rails.respond_to?(:root) && ::Rails.root || '').join("config", "authorization_rules.rb").to_s] unless defined? AUTH_DSL_FILES
 
   # Controller-independent method for retrieving the current user.
   # Needed for model security where the current controller is not available.

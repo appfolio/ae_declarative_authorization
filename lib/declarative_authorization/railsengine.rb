@@ -1,4 +1,4 @@
-require 'rails'
+require 'rails/engine'
 
 module Authorization
   class RailsEngine < Rails::Engine
