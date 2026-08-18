@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.5.0](https://github.com/appfolio/ae_declarative_authorization/compare/v2.4.1...v2.5.0) (2026-08-18)
+
+
+### Features
+
+* replace rails dependency with specific components ([3838b5b](https://github.com/appfolio/ae_declarative_authorization/commit/3838b5b2946905ea4c74cee0b315ef24ff3784b6))
+* replace rails dependency with specific components ([b2b1f55](https://github.com/appfolio/ae_declarative_authorization/commit/b2b1f55172e1179b01583bb6e323e3e472a1318b))
+
+
+### Bug Fixes
+
+* revert change to allowed push host ([8e9e59c](https://github.com/appfolio/ae_declarative_authorization/commit/8e9e59c1be813687f3e8e2753f0650724a5a0b2e))
+* revert change to allowed push host ([b5149cd](https://github.com/appfolio/ae_declarative_authorization/commit/b5149cd401305ea62bf59f1d500dae379b4390c0))
+
+
+### Miscellaneous Chores
+
+* migrate catalog-info.yaml metadata into gemspec for gemspec catalog ingestor ([d4d5e61](https://github.com/appfolio/ae_declarative_authorization/commit/d4d5e61e59f62d1930b011f7225e595f1fbefcaf))
+* standardize CI and test configuration ([d67cec0](https://github.com/appfolio/ae_declarative_authorization/commit/d67cec0e57b6fcba9851c5ec75b80e4ab6328242))
+
+
+### Build System
+
+* migrate gem source from RubyGems to JFrog ([c65f6dc](https://github.com/appfolio/ae_declarative_authorization/commit/c65f6dc04156a4ea9b83a9aeb77d997a2477bcc2))
+
 ## [2.4.1](https://github.com/appfolio/ae_declarative_authorization/compare/v2.4.0...v2.4.1) (2026-05-08)
 
 
