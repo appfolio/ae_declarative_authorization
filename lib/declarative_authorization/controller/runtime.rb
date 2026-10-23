@@ -7,7 +7,7 @@ module Authorization
       # load the appropriate object from the current controller's model with
       # the id from params[:id].  If that fails, a 404 Not Found is often the
       # right way to handle the error.  If you have additional measures in place
-      # that restricts the find scope, handling this error as a permission denied
+      # that restrict the find scope, handling this error as a permission denied
       # might be a better way.  Set failed_auto_loading_is_not_found to false
       # for the latter behavior.
       @@failed_auto_loading_is_not_found = true
@@ -59,7 +59,7 @@ module Authorization
         end
       end
 
-      # Works similar to the permitted_to? method, but
+      # Works similarly to the permitted_to? method, but
       # throws the authorization exceptions, just like Engine#permit!
       def permitted_to!(privilege, object_or_sym = nil, options = {})
         authorization_engine.permit!(privilege, options_for_permit(object_or_sym, options, true))

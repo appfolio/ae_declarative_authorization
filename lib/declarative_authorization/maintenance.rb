@@ -6,7 +6,7 @@ module Authorization
   # authorization.
   module Maintenance
     # Disables access control for the given block.  Appropriate for
-    # maintenance operation at the Rails console or in test case setup.
+    # maintenance operations at the Rails console or in test case setup.
     #
     # For use in the Rails console:
     #  require "vendor/plugins/declarative_authorization/lib/maintenance"
@@ -141,7 +141,7 @@ module Authorization
   module TestHelper
     include Authorization::Maintenance
 
-    # Analogue to the Ruby's assert_raise method, only executing the block
+    # Analogue to Ruby's assert_raise method, only executing the block
     # in the context of the given user.
     def assert_raise_with_user(user, *args)
       assert_raise(*args) do
@@ -158,10 +158,10 @@ module Authorization
     #     should_be_allowed_to :read, a_published_conference
     #   end
     #
-    # If the objects class name does not match the controller name, you can set the object and context manually
+    # If the object's class name does not match the controller name, you can set the object and context manually
     #   should_be_allowed_to :create, :object => car, :context => :vehicles
     #
-    # If you use specify the object and context manually, you can also specify the user manually, skipping the with_user block:
+    # If you specify the object and context manually, you can also specify the user manually, skipping the with_user block:
     #   should_be_allowed_to :create, :object => car, :context => :vehicles, :user => a_normal_user
     def should_be_allowed_to(privilege, *args)
       options = {}
