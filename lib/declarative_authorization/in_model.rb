@@ -18,7 +18,7 @@ module Authorization
       end
     end
 
-    # Works similar to the permitted_to? method, but doesn't accept a block
+    # Works similarly to the permitted_to? method, but doesn't accept a block
     # and throws the authorization exceptions, just like Engine#permit!
     def permitted_to!(privilege, options = {})
       options = {
@@ -107,7 +107,7 @@ module Authorization
         #     using_access_control
         #   end
         #   
-        # If an operation is not permitted, a Authorization::AuthorizationError
+        # If an operation is not permitted, an Authorization::AuthorizationError
         # is raised.
         #
         # To activate model security on all models, call using_access_control
@@ -115,7 +115,7 @@ module Authorization
         #   ActiveRecord::Base.using_access_control
         # 
         # Available options
-        # [:+context+] Specify context different from the models table name.
+        # [:+context+] Specify context different from the model's table name.
         # [:+include_read+] Also check for :+read+ privilege after find.
         #
         def self.using_access_control(options = {})
